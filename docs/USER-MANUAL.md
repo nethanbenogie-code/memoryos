@@ -28,7 +28,7 @@ After installing, MemoryOS works even with no internet connection. Your memories
 
 ### The main screen
 
-On a computer you'll see a sidebar on the left with four views — **Timeline**, **Search**, **Tasks**, and **Journal** — plus a **+ Capture** button. On a phone, the same four views sit in a bar at the bottom of the screen, and a round **+** button floats above it for capturing.
+On a computer you'll see a sidebar on the left with five views — **Timeline**, **Search**, **Tasks**, **Journal**, and **Backup** — plus a **+ Capture** button, a share button, and links to **About MemoryOS** and this **User manual**, which you can read right inside the app, even offline. On a phone, the same five views sit in a bar at the bottom of the screen, a round **+** button floats above it for capturing, and you'll find About and the manual inside the **Backup** tab under "Learn more."
 
 ---
 

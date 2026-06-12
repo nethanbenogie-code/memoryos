@@ -20,6 +20,8 @@ import { BackupView } from "./ui/backup-view.js";
 import { showToast } from "./ui/celebration.js";
 import { getBackupStatus } from "./services/backup-service.js";
 import { shareApp } from "./ui/share.js";
+import { AboutView } from "./ui/about-view.js";
+import { ManualView } from "./ui/manual-view.js";
 import { initCelebrations } from "./ui/celebration.js";
 import { startReminderLoop } from "./services/reminder-service.js";
 
@@ -29,6 +31,8 @@ const VIEWS = [
   { id: "tasks", label: "Tasks", icon: "☑", View: TasksView },
   { id: "journal", label: "Journal", icon: "✎", View: JournalView },
   { id: "backup", label: "Backup", icon: "⛉", View: BackupView },
+  { id: "about", label: "About MemoryOS", icon: "◈", View: AboutView, hidden: true },
+  { id: "manual", label: "User manual", icon: "✦", View: ManualView, hidden: true },
 ];
 
 let currentView = null;
@@ -42,10 +46,26 @@ async function main() {
   const sideNav = document.getElementById("side-nav");
   const tabBar = document.getElementById("tab-bar");
 
-  for (const { id, label, icon } of VIEWS) {
+  for (const { id, label, icon, hidden } of VIEWS) {
+    if (hidden) continue;
     sideNav.append(navButton(id, label, icon, "nav-item"));
     tabBar.append(navButton(id, label, icon, "tab-item"));
   }
+
+  // Sidebar footer: About and the in-app User Manual.
+  const sideLinks = document.getElementById("side-links");
+  for (const { id, label } of VIEWS.filter((v) => v.hidden)) {
+    sideLinks.append(
+      el(
+        "button.side-link",
+        { type: "button", dataset: { view: id }, onclick: () => showView(id, host) },
+        label
+      )
+    );
+  }
+
+  // Views (and anything else) can request navigation via the bus.
+  bus.on("navigate", ({ view }) => showView(view, host));
 
   document.getElementById("capture-btn").addEventListener("click", openCapture);
   document.getElementById("share-btn").addEventListener("click", shareApp);

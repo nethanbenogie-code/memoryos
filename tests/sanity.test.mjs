@@ -7,6 +7,7 @@ import { extractTags } from "../js/services/memory-service.js";
 import { dayKey, dayBounds } from "../js/services/journal-service.js";
 import { computeRewards, pointsFor, POINTS_BASE, POINTS_ON_TIME_BONUS } from "../js/services/rewards-service.js";
 import { planMerge, validateSnapshot, backupFilename, BACKUP_FORMAT, BACKUP_SCHEMA } from "../js/services/backup-service.js";
+import { renderMarkdown } from "../js/ui/manual-view.js";
 
 let passed = 0, failed = 0;
 function test(name, fn) {
@@ -201,6 +202,30 @@ test("backupFilename is dated and filesystem-safe", () => {
 test("backup modules import cleanly without a DOM", async () => {
   await import("../js/ui/backup-view.js");
   await import("../js/ui/share.js");
+});
+
+// --- in-app manual renderer ---
+test("renderMarkdown: headings, lists, bold, code, rules", () => {
+  const html = renderMarkdown("# Title\n\nHello **world** and `code`.\n\n- one\n- two\n\n---\n\n## Next");
+  assert(html.includes("<h1>Title</h1>"), "h1");
+  assert(html.includes("<strong>world</strong>") && html.includes("<code>code</code>"), "inline");
+  assert(html.includes("<ul>") && html.includes("<li>one</li>"), "list");
+  assert(html.includes("<hr/>") && html.includes("<h2>Next</h2>"), "hr + h2");
+});
+test("renderMarkdown escapes HTML — no script injection via the manual", () => {
+  const html = renderMarkdown("Hello <script>alert(1)</script> **<b>bold</b>**");
+  assert(!html.includes("<script>"), "script tag must be escaped");
+  assert(html.includes("&lt;script&gt;"), "escaped form present");
+});
+test("renderMarkdown handles the real manual without crashing", async () => {
+  const { readFileSync } = await import("node:fs");
+  const real = readFileSync(new URL("../docs/USER-MANUAL.md", import.meta.url), "utf8");
+  const html = renderMarkdown(real);
+  assert(html.includes("<h1>") && html.split("<h2>").length >= 15, "all sections rendered");
+  assert(!/<(script|iframe)/i.test(html), "no active content");
+});
+test("about/manual views import cleanly without a DOM", async () => {
+  await import("../js/ui/about-view.js");
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

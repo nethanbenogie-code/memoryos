@@ -43,7 +43,8 @@ export class BackupView {
       backup.autoBackupSupported() ? await this._autoSection(status) : null,
       this._restoreSection(),
       this._explainer(),
-      this._tellAFriend()
+      this._tellAFriend(),
+      this._learnMore()
     );
   }
 
@@ -263,6 +264,28 @@ export class BackupView {
         "If MemoryOS helps you, pass it on. Everyone gets their own private copy — free, no account, no ads."
       ),
       el("button.btn", { type: "button", onclick: shareApp }, "♡ Share MemoryOS")
+    );
+  }
+
+  _learnMore() {
+    return el(
+      "section.journal-section",
+      {},
+      el("h3.section-heading", {}, "Learn more"),
+      el(
+        "div.about-actions",
+        {},
+        el(
+          "button.btn",
+          { type: "button", onclick: () => bus.emit("navigate", { view: "about" }) },
+          "About MemoryOS"
+        ),
+        el(
+          "button.btn",
+          { type: "button", onclick: () => bus.emit("navigate", { view: "manual" }) },
+          "User manual"
+        )
+      )
     );
   }
 
