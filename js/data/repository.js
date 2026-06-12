@@ -155,3 +155,37 @@ export async function setMeta(key, value) {
   tx.objectStore("meta").put({ key, value });
   await txDone(tx);
 }
+
+/* ----------------------- backup / restore access ----------------------- */
+
+/**
+ * EVERY memory including soft-deleted tombstones — backups must carry
+ * deletions, or a restore would resurrect things the user removed.
+ */
+export async function listMemoriesRaw() {
+  const db = await openDatabase();
+  const tx = db.transaction("memories", "readonly");
+  return promisify(tx.objectStore("memories").getAll());
+}
+
+/** Every link record. */
+export async function listAllLinks() {
+  const db = await openDatabase();
+  const tx = db.transaction("links", "readonly");
+  return promisify(tx.objectStore("links").getAll());
+}
+
+/**
+ * Write a restore's worth of records in ONE transaction — either the
+ * whole restore lands or none of it does.
+ * @param {Array} memories @param {Array} links
+ */
+export async function bulkUpsert(memories, links) {
+  const db = await openDatabase();
+  const tx = db.transaction(["memories", "links"], "readwrite");
+  const memStore = tx.objectStore("memories");
+  const linkStore = tx.objectStore("links");
+  for (const memory of memories) memStore.put(memory);
+  for (const link of links) linkStore.put(link);
+  await txDone(tx);
+}

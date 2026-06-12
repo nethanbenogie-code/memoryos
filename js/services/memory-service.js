@@ -129,6 +129,23 @@ export async function editMemory(id, changes) {
 }
 
 /**
+ * Set or clear a task's due time. Changing the due time re-arms the
+ * reminder (clears extra.remindedAt) so the task will ring again at
+ * its new moment.
+ * @param {string} id
+ * @param {string|null} dueAtIso ISO UTC, or null to remove the reminder.
+ */
+export async function setDueDate(id, dueAtIso) {
+  const memory = await repo.getMemory(id);
+  if (!memory) throw new Error("Memory not found.");
+  memory.dueAt = dueAtIso;
+  memory.extra.remindedAt = null;
+  await repo.updateMemory(memory);
+  bus.emit("memory:updated", { memory });
+  return memory;
+}
+
+/**
  * Soft-delete a memory.
  * @param {string} id
  */

@@ -137,7 +137,8 @@ export function memoryCard(memory, opts = {}) {
           title: "Click to advance status",
         },
         STATUS_LABELS[memory.status] ?? memory.status
-      )
+      ),
+      dueControl(memory)
     );
   } else if (memory.type !== MemoryType.JOURNAL) {
     actions.append(
@@ -172,6 +173,92 @@ export function memoryCard(memory, opts = {}) {
     tags,
     actions
   );
+}
+
+/**
+ * The due/reminder control on a task card.
+ * No due time → an "⏰ Remind me" button that opens an inline editor.
+ * Due time set → a badge ("Due Jun 14, 3:00 PM", red when overdue)
+ * with an × to clear. Setting a time also asks for notification
+ * permission — contextually, at the moment it makes sense.
+ * @param {Object} memory
+ */
+function dueControl(memory) {
+  const host = el("span.due-control");
+
+  if (memory.dueAt) {
+    const overdue =
+      memory.status !== TaskStatus.COMPLETED &&
+      memory.dueAt <= new Date().toISOString();
+    host.append(
+      el(
+        `span.due-badge${overdue ? ".overdue" : ""}`,
+        { title: overdue ? "This task is overdue" : "Reminder set" },
+        `⏰ ${formatDue(memory.dueAt)}`
+      ),
+      el(
+        "button.btn.btn-quiet.due-clear",
+        {
+          type: "button",
+          "aria-label": "Remove reminder",
+          onclick: () => memoryService.setDueDate(memory.id, null),
+        },
+        "×"
+      )
+    );
+    return host;
+  }
+
+  const openEditor = () => {
+    const input = el("input.due-input", {
+      type: "datetime-local",
+      value: defaultDueValue(),
+      "aria-label": "Due date and time",
+    });
+    const setBtn = el(
+      "button.btn.due-set",
+      {
+        type: "button",
+        onclick: async () => {
+          if (!input.value) return;
+          const { requestNotificationPermission } = await import(
+            "../services/reminder-service.js"
+          );
+          requestNotificationPermission();
+          await memoryService.setDueDate(
+            memory.id,
+            new Date(input.value).toISOString()
+          );
+        },
+      },
+      "Set"
+    );
+    host.replaceChildren(input, setBtn);
+    input.focus();
+  };
+
+  host.append(
+    el("button.btn.btn-quiet", { type: "button", onclick: openEditor }, "⏰ Remind me")
+  );
+  return host;
+}
+
+/** "Jun 14, 3:00 PM" in local time. @param {string} iso */
+function formatDue(iso) {
+  return new Date(iso).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/** Default editor value: one hour from now, as a datetime-local string. */
+function defaultDueValue() {
+  const d = new Date(Date.now() + 60 * 60 * 1000);
+  d.setMinutes(0, 0, 0);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 /** An empty-state block that invites action instead of apologizing. */

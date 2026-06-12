@@ -5,6 +5,8 @@ import { createMemory, createLink, normalizeTags, deriveTitle, MemoryType, TaskS
 import { SearchIndex, tokenize } from "../js/services/search-service.js";
 import { extractTags } from "../js/services/memory-service.js";
 import { dayKey, dayBounds } from "../js/services/journal-service.js";
+import { computeRewards, pointsFor, POINTS_BASE, POINTS_ON_TIME_BONUS } from "../js/services/rewards-service.js";
+import { planMerge, validateSnapshot, backupFilename, BACKUP_FORMAT, BACKUP_SCHEMA } from "../js/services/backup-service.js";
 
 let passed = 0, failed = 0;
 function test(name, fn) {
@@ -123,6 +125,82 @@ test("UI modules import cleanly without a DOM", async () => {
   await import("../js/ui/journal-view.js");
   await import("../js/data/db.js");
   await import("../js/data/repository.js");
+});
+
+// --- rewards ---
+test("pointsFor: base + on-time bonus", () => {
+  const base = { dueAt: null, extra: { completedAt: "2026-06-13T01:00:00Z" } };
+  assert(pointsFor(base) === POINTS_BASE);
+  const onTime = { dueAt: "2026-06-13T02:00:00Z", extra: { completedAt: "2026-06-13T01:00:00Z" } };
+  assert(pointsFor(onTime) === POINTS_BASE + POINTS_ON_TIME_BONUS);
+  const late = { dueAt: "2026-06-13T00:30:00Z", extra: { completedAt: "2026-06-13T01:00:00Z" } };
+  assert(pointsFor(late) === POINTS_BASE, "late tasks still earn base points — no punishment");
+});
+test("computeRewards: totals, today, level, progress", () => {
+  const now = new Date(2026, 5, 13, 12, 0);
+  const iso = (d, h) => new Date(2026, 5, d, h).toISOString();
+  const done = (d, h) => ({ status: "completed", dueAt: null, extra: { completedAt: iso(d, h) } });
+  const tasks = [
+    done(13, 9), done(13, 10),               // today: 20 pts
+    done(12, 9), done(11, 9),                // streak back to the 11th
+    { status: "pending", dueAt: null, extra: {} },
+  ];
+  const r = computeRewards(tasks, now);
+  assert(r.totalPoints === 40, "total " + r.totalPoints);
+  assert(r.todayPoints === 20, "today " + r.todayPoints);
+  assert(r.streak === 3, "streak " + r.streak);
+  assert(r.level === 1 && r.intoLevel === 40 && r.completedCount === 4);
+});
+test("computeRewards: streak survives an unfinished today", () => {
+  const now = new Date(2026, 5, 13, 8, 0);
+  const done = (d) => ({ status: "completed", dueAt: null, extra: { completedAt: new Date(2026, 5, d, 9).toISOString() } });
+  const r = computeRewards([done(12), done(11)], now);
+  assert(r.streak === 2, "yesterday's streak should still stand this morning, streak=" + r.streak);
+});
+test("computeRewards: empty list is calm, not crashing", () => {
+  const r = computeRewards([]);
+  assert(r.totalPoints === 0 && r.streak === 0 && r.level === 1);
+});
+test("new modules import cleanly without a DOM", async () => {
+  await import("../js/services/reminder-service.js");
+  await import("../js/ui/celebration.js");
+});
+
+// --- backup / restore merge ---
+test("planMerge: insert new, newer wins, idempotent", () => {
+  const mem = (id, mod) => ({ id, modifiedAt: mod, title: id });
+  const existing = [mem("a", "2026-06-10T00:00:00Z"), mem("b", "2026-06-12T00:00:00Z")];
+  const snapshot = { memories: [
+    mem("a", "2026-06-11T00:00:00Z"),   // newer -> update
+    mem("b", "2026-06-01T00:00:00Z"),   // older -> skip
+    mem("c", "2026-06-13T00:00:00Z"),   // new   -> insert
+  ], links: [{ id: "L1" }] };
+  const plan = planMerge(existing, [], snapshot);
+  assert(plan.report.inserted === 1 && plan.report.updated === 1 && plan.report.unchanged === 1, JSON.stringify(plan.report));
+  assert(plan.linksToWrite.length === 1);
+  // Idempotence: applying the plan then re-merging the same snapshot = no-op
+  const after = [...existing.filter(m => m.id !== "a"), ...plan.memoriesToWrite];
+  const again = planMerge(after, snapshot.links, snapshot);
+  assert(again.report.inserted === 0 && again.report.updated === 0 && again.report.newLinks === 0, "restore must be safely repeatable");
+});
+test("planMerge: tombstones travel through backups", () => {
+  const dead = { id: "x", modifiedAt: "2026-06-12T00:00:00Z", deletedAt: "2026-06-12T00:00:00Z" };
+  const plan = planMerge([{ id: "x", modifiedAt: "2026-06-10T00:00:00Z", deletedAt: null }], [], { memories: [dead], links: [] });
+  assert(plan.memoriesToWrite[0].deletedAt !== null, "deletion must propagate on restore");
+});
+test("validateSnapshot rejects garbage, accepts real backups", () => {
+  assert(validateSnapshot(null) !== null);
+  assert(validateSnapshot({ format: "other" }) !== null);
+  assert(validateSnapshot({ format: BACKUP_FORMAT, schema: BACKUP_SCHEMA + 1, memories: [] }) !== null, "future schema refused politely");
+  assert(validateSnapshot({ format: BACKUP_FORMAT, schema: BACKUP_SCHEMA, memories: [], links: [] }) === null);
+});
+test("backupFilename is dated and filesystem-safe", () => {
+  const name = backupFilename(new Date(2026, 5, 13, 14, 5));
+  assert(name === "memoryos-backup-2026-06-13-1405.json", name);
+});
+test("backup modules import cleanly without a DOM", async () => {
+  await import("../js/ui/backup-view.js");
+  await import("../js/ui/share.js");
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

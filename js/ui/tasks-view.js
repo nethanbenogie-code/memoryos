@@ -10,6 +10,7 @@
 import { bus } from "../core/events.js";
 import { MemoryType, TaskStatus, Priority } from "../data/models.js";
 import * as repo from "../data/repository.js";
+import { computeRewards } from "../services/rewards-service.js";
 import { el, emptyState, memoryCard } from "./components.js";
 import { openCapture } from "./capture.js";
 
@@ -49,7 +50,54 @@ export class TasksView {
 
     this.container.replaceChildren(
       el("header.view-head", {}, el("h2.view-title", {}, "Tasks")),
+      this._rewards(tasks),
       tasks.length ? this._board(tasks) : this._empty()
+    );
+  }
+
+  /**
+   * The rewards panel: level, points, streak, and progress toward the
+   * next level. All derived live from the task list — nothing stored.
+   */
+  _rewards(tasks) {
+    const r = computeRewards(tasks);
+    if (r.completedCount === 0) return el("span");
+
+    const bar = el(
+      "div.level-bar",
+      {
+        role: "progressbar",
+        "aria-valuemin": "0",
+        "aria-valuemax": String(r.levelStep),
+        "aria-valuenow": String(r.intoLevel),
+        "aria-label": "Progress to next level",
+      },
+      el("div.level-fill", { style: `width:${Math.round(r.progress * 100)}%` })
+    );
+
+    return el(
+      "section.rewards",
+      {},
+      el(
+        "div.rewards-row",
+        {},
+        el(
+          "span.rewards-level",
+          {},
+          `Level ${r.level} · ${r.levelName}`
+        ),
+        r.streak >= 2
+          ? el("span.rewards-streak", { title: "Days in a row with a completed task" }, `🔥 ${r.streak}-day streak`)
+          : null
+      ),
+      el(
+        "div.rewards-row.rewards-points",
+        {},
+        el("span", {}, `${r.totalPoints} points`),
+        r.todayPoints > 0 ? el("span.rewards-today", {}, `+${r.todayPoints} today`) : null,
+        el("span.rewards-next", {}, `${r.levelStep - r.intoLevel} to next level`)
+      ),
+      bar
     );
   }
 

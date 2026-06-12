@@ -1,10 +1,12 @@
 # MemoryOS
 
-A **local-first personal memory operating system** — a digital extension of human memory. Capture anything in two seconds, see your life as a timeline, search every memory instantly, turn anything into a task, and let each day write its own journal page.
+A **local-first personal memory operating system** — a digital extension of human memory. Capture anything in two seconds, see your life as a timeline, search every memory instantly, turn anything into a task with reminders that ring when due, earn points and streaks for finishing things, back up everything with one tap (or automatically, daily), share the app to any social network in one tap, and let each day write its own journal page.
 
 **Your data never leaves your device.** MemoryOS stores everything in your browser's IndexedDB. The website only delivers the code; no server ever sees a memory.
 
 Works on desktop and mobile as an installable Progressive Web App (PWA) — add it to your home screen and it runs offline.
+
+**New here?** Read the [User Manual](docs/USER-MANUAL.md) — installing on your phone, capturing, search, tasks, the journal, and how your data is protected.
 
 ## Run it locally
 
@@ -57,7 +59,7 @@ Design notes: serif type is reserved exclusively for *time* (day headings, the j
 
 ## Roadmap
 
-- **v0.2** — calendar view, unified event/task timeline, weekly planning, edit-in-place, data export/import (JSON).
+- **v0.2** — task reminders with system notifications, a humane rewards system (points, levels, streaks), and one-tap / shared / automatic backups with merge-safe restore — **shipped**. Next: edit-in-place, calendar view, weekly planning.
 - **v0.3** — AI assistant over your own knowledge base (natural-language search, daily summaries); the `embeddings` store is already in the schema waiting for this.
 - **v0.4** — the memory graph: relationship visualization over the `links` store that has been accumulating since v0.1.
 - **v0.5** — optional multi-device sync (last-write-wins on `modifiedAt`, tombstone propagation).

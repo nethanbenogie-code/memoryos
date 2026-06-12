@@ -491,3 +491,175 @@ button.chip:hover { border-color: var(--ink-soft); }
   .task-board { grid-template-columns: 1fr; }
   .journal-heading { font-size: 22px; }
 }
+
+/* ============================ v0.2 additions ============================ */
+
+/* --------------------------- rewards panel --------------------------- */
+
+.rewards {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.rewards-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.rewards-level { font-family: var(--serif); font-size: 18px; font-weight: 600; }
+.rewards-streak { color: var(--c-task); font-weight: 600; font-size: 13px; }
+.rewards-points { color: var(--ink-soft); font-size: 13px; margin-top: 2px; }
+.rewards-today { color: var(--c-project); font-weight: 600; }
+.rewards-next { margin-left: auto; }
+
+.level-bar {
+  margin-top: 10px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.level-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--c-idea));
+  transition: width 400ms ease;
+}
+
+/* ------------------------- due / reminder UI ------------------------- */
+
+.due-control { display: inline-flex; align-items: center; gap: 4px; }
+
+.due-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-variant-numeric: tabular-nums;
+}
+.due-badge.overdue {
+  color: #c0382b;
+  border-color: currentColor;
+}
+.due-clear { padding: 2px 8px; font-size: 15px; line-height: 1; }
+
+.due-input {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 8px;
+}
+.due-set { padding: 5px 12px; }
+
+/* ------------------------------- toasts ------------------------------ */
+
+.toast-host {
+  position: fixed;
+  left: 50%;
+  bottom: 84px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 60;
+  pointer-events: none;
+}
+.toast {
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 10px 18px;
+  box-shadow: 0 8px 24px rgba(15, 18, 35, 0.3);
+  animation: toast-in 240ms ease-out;
+  max-width: min(420px, calc(100vw - 32px));
+}
+.toast-accent { background: var(--accent); color: var(--accent-ink); }
+.toast-out { opacity: 0; transition: opacity 280ms ease; }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ------------------------------ confetti ----------------------------- */
+
+.confetti-host {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 55;
+}
+.confetti {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 9px;
+  height: 13px;
+  animation: confetti-fly 1.3s cubic-bezier(0.2, 0.6, 0.4, 1) var(--delay, 0ms) forwards;
+  opacity: 0;
+}
+@keyframes confetti-fly {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--dx, 0px), 62vh) rotate(var(--rot, 360deg)); }
+}
+
+/* --------------------------- backup view ---------------------------- */
+
+.backup-status {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--c-project);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.backup-status[data-tone="stale"] { border-left-color: var(--c-task); }
+.backup-status[data-tone="neutral"] { border-left-color: var(--line); }
+.backup-line { margin: 0; font-family: var(--serif); font-size: 18px; }
+.backup-sub { margin: 4px 0 0; color: var(--ink-soft); font-size: 13px; }
+
+.backup-actions { display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px; }
+.backup-big { padding: 13px 18px; font-size: 15px; text-align: center; }
+.backup-hint { margin: 0 0 10px; color: var(--ink-soft); font-size: 13px; line-height: 1.6; }
+
+/* attention dot on the Backup nav item when backups are stale */
+[data-view="backup"] { position: relative; }
+[data-view="backup"][data-attention]::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-task);
+  border: 2px solid var(--paper);
+}
+
+/* ----------------------------- share UI ----------------------------- */
+
+.share-cta { width: 100%; margin-top: 8px; }
+.share-title { margin: 0; font-family: var(--serif); font-size: 20px; }
+.share-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.share-link {
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
