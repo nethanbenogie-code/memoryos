@@ -28,7 +28,7 @@ After installing, MemoryOS works even with no internet connection. Your memories
 
 ### The main screen
 
-On a computer you'll see a sidebar on the left with five views — **Timeline**, **Search**, **Tasks**, **Journal**, and **Backup** — plus a **+ Capture** button, a share button, and links to **About MemoryOS** and this **User manual**, which you can read right inside the app, even offline. On a phone, the same five views sit in a bar at the bottom of the screen, a round **+** button floats above it for capturing, and you'll find About and the manual inside the **Backup** tab under "Learn more."
+On a computer you'll see a sidebar on the left with five views — **Timeline**, **Search**, **Tasks**, **Journal**, and **Backup** — plus a **+ Capture** button, a share button, and links to **About MemoryOS** and this **User manual**, which you can read right inside the app, even offline. On a phone, the same five views sit in a bar at the bottom of the screen, a round **+** button floats above it for capturing, and you'll find the app lock, About, and the manual inside the **Backup** tab.
 
 ---
 
@@ -155,7 +155,25 @@ If you read only one section of this manual, read this one — or skip it and ju
 
 ---
 
-## 10. Your data and your privacy
+## 10. Locking the app (optional, recommended)
+
+If other people use your device, you can put a password on MemoryOS so only you can open it. It's optional — and recommended if your phone or computer is ever in someone else's hands.
+
+**Turning it on.** Open the **Backup** tab, find **App lock**, press **Set up app lock**, choose a password (at least 4 characters), and optionally write a hint. You'll then be shown a **recovery code** that looks like `ABCD-EFGH-JKMN`.
+
+**Write the recovery code on paper. This part matters.** Because MemoryOS has no server and no email, there is no "send me a reset link" — the recovery code *is* your reset. It's shown only once. Write it down and keep it somewhere away from your device. If you forget your password and have the code, you're back in; if you lose both, no one can unlock the app, not even you. That's what makes it a real lock.
+
+**Using it.** From then on, MemoryOS asks for your password each time it opens. Get it right and you're in. There's also a **Lock now** button in the Backup tab for when you hand your device to someone.
+
+**Forgot your password?** On the lock screen, press **Forgot password?**, enter your recovery code, and set a new password. You'll receive a brand-new recovery code — write that one down too, because the old one stops working.
+
+**Changing or removing the lock.** In the Backup tab you can change your password (which issues a fresh recovery code) or turn the lock off entirely — both ask for your current password first.
+
+**One honest note about what the lock does.** The app lock keeps other people from opening MemoryOS — like a PIN on your phone. It is a door lock, not a vault: a determined expert with full access to your device could still reach the raw data underneath. For the everyday purpose of keeping family, friends, or coworkers out of your memories, it does exactly its job.
+
+---
+
+## 11. Your data and your privacy
 
 This section matters more than any other. Please read it.
 
@@ -169,7 +187,7 @@ This section matters more than any other. Please read it.
 
 ---
 
-## 11. Working offline
+## 12. Working offline
 
 Once you've opened MemoryOS one time, it works with no internet at all — on a bus, on a ferry, during a brownout. Capture, search, tasks, journal: everything functions identically because nothing ever depended on a connection.
 
@@ -177,13 +195,13 @@ When the app's developer publishes an update, you'll receive it automatically th
 
 ---
 
-## 12. Keyboard shortcuts
+## 13. Keyboard shortcuts
 
 MemoryOS keeps shortcuts few and worth memorizing. **Ctrl+K** (**⌘K** on Mac) opens Quick Capture from anywhere. Inside the capture box, **Enter** saves the memory, **Shift+Enter** adds a new line, and **Esc** closes without saving.
 
 ---
 
-## 13. Troubleshooting
+## 14. Troubleshooting
 
 **The app shows a blank page or won't start.** Reload the page once. If it persists, make sure JavaScript is enabled and your browser is reasonably up to date (any browser from the last few years is fine).
 
@@ -195,13 +213,15 @@ MemoryOS keeps shortcuts few and worth memorizing. **Ctrl+K** (**⌘K** on Mac) 
 
 **Reminders don't show system notifications.** Check that you allowed notifications for MemoryOS in your browser's site settings, and that your device isn't in Do Not Disturb / Focus mode. Remember that MemoryOS must be open — at least in a background tab — for a reminder to ring at its exact time; otherwise it rings when you next open the app.
 
+**I forgot my password and my recovery code.** There is deliberately no way around the lock without one of them — that's what keeps it secure. If you have a backup file from before (section 9), you can install MemoryOS fresh on another device or browser, restore the backup there, and leave the lock off.
+
 **Restore says “already up to date”.** That's good news, not an error — it means everything in that backup file is already on this device.
 
 **Today's journal shows yesterday's date.** Journal days follow your device's clock and timezone — check your device's date and time settings.
 
 ---
 
-## 14. Sharing MemoryOS with friends
+## 15. Sharing MemoryOS with friends
 
 If MemoryOS helps you, the kindest thing you can do is pass it on — and the safest, because everyone gets their **own private copy**. Sharing the app never shares your memories; a friend who opens your link starts with a completely empty MemoryOS of their own.
 
@@ -211,7 +231,7 @@ MemoryOS is free and open source, with no account, no ads, and nothing to sign u
 
 ---
 
-## 15. A way to use MemoryOS well
+## 16. A way to use MemoryOS well
 
 Tools don't build habits; small routines do. Here is one that works:
 

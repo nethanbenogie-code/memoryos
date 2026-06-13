@@ -22,6 +22,8 @@ import { getBackupStatus } from "./services/backup-service.js";
 import { shareApp } from "./ui/share.js";
 import { AboutView } from "./ui/about-view.js";
 import { ManualView } from "./ui/manual-view.js";
+import { isLockEnabled, lockNow } from "./services/lock-service.js";
+import { showLockScreen } from "./ui/lock-screen.js";
 import { initCelebrations } from "./ui/celebration.js";
 import { startReminderLoop } from "./services/reminder-service.js";
 
@@ -40,6 +42,7 @@ let currentId = null;
 
 async function main() {
   await openDatabase();
+  if (await isLockEnabled()) await showLockScreen();
   searchIndex.build(await memoryService.listAll());
 
   const host = document.getElementById("view-host");
@@ -66,6 +69,11 @@ async function main() {
 
   // Views (and anything else) can request navigation via the bus.
   bus.on("navigate", ({ view }) => showView(view, host));
+
+  // "Lock now": relock the session and show the lock screen again.
+  bus.on("lock:locked", async () => {
+    await showLockScreen();
+  });
 
   document.getElementById("capture-btn").addEventListener("click", openCapture);
   document.getElementById("share-btn").addEventListener("click", shareApp);

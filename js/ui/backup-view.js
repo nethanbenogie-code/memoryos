@@ -11,6 +11,7 @@ import * as backup from "../services/backup-service.js";
 import { el, emptyState } from "./components.js";
 import { showToast } from "./celebration.js";
 import { shareApp } from "./share.js";
+import * as lock from "../services/lock-service.js";
 
 export class BackupView {
   /** @param {HTMLElement} container */
@@ -42,6 +43,7 @@ export class BackupView {
       this._actions(status),
       backup.autoBackupSupported() ? await this._autoSection(status) : null,
       this._restoreSection(),
+      await this._lockSection(),
       this._explainer(),
       this._tellAFriend(),
       this._learnMore()
@@ -287,6 +289,72 @@ export class BackupView {
         )
       )
     );
+  }
+
+  async _lockSection() {
+    const host = el("section.journal-section");
+    host.append(el("h3.section-heading", {}, "App lock"));
+    const enabled = await lock.isLockEnabled();
+
+    if (!enabled) {
+      const pass = el("input.due-input.lock-form-input", { type: "password", placeholder: "Password (4+ characters)", autocomplete: "new-password" });
+      const confirm = el("input.due-input.lock-form-input", { type: "password", placeholder: "Repeat password", autocomplete: "new-password" });
+      const hint = el("input.due-input.lock-form-input", { type: "text", placeholder: "Optional hint (don't write the password itself)" });
+      const form = el("div.lock-form", {}, pass, confirm, hint,
+        el("button.btn.btn-primary", { type: "button", onclick: async () => {
+          if (pass.value.length < 4) return showToast("The password needs at least 4 characters.");
+          if (pass.value !== confirm.value) return showToast("The two passwords don't match.");
+          const code = await lock.setupLock(pass.value, hint.value);
+          this._showRecoveryCode(host, code, "App lock is on. This recovery code is shown only once — write it on paper now. It's the ONLY way back in if you forget your password.");
+        } }, "Turn on app lock")
+      );
+      host.append(
+        el("p.backup-hint", {}, "Recommended if other people use this device. The lock asks for a password whenever MemoryOS opens. You'll get a recovery code in case you forget it — the lock keeps casual snoops out, like a PIN on your phone."),
+        el("button.btn", { type: "button", onclick: (e) => { e.target.replaceWith(form); pass.focus(); } }, "Set up app lock")
+      );
+      return host;
+    }
+
+    const current = el("input.due-input.lock-form-input", { type: "password", placeholder: "Current password", autocomplete: "current-password" });
+    const next = el("input.due-input.lock-form-input", { type: "password", placeholder: "New password (4+ characters)", autocomplete: "new-password" });
+    const changeForm = el("div.lock-form", {}, current, next,
+      el("button.btn", { type: "button", onclick: async () => {
+        try {
+          const code = await lock.changePassword(current.value, next.value);
+          if (!code) return showToast("Current password doesn't match.");
+          this._showRecoveryCode(host, code, "Password changed. Your OLD recovery code no longer works — write this new one on paper now.");
+        } catch (err) { showToast(err.message); }
+      } }, "Change password")
+    );
+    const offPass = el("input.due-input.lock-form-input", { type: "password", placeholder: "Current password", autocomplete: "current-password" });
+    const offForm = el("div.lock-form", {}, offPass,
+      el("button.btn.btn-quiet.btn-danger", { type: "button", onclick: async () => {
+        if (await lock.disableLock(offPass.value)) { showToast("App lock turned off."); this.render(); }
+        else showToast("Current password doesn't match.");
+      } }, "Confirm: turn off lock")
+    );
+
+    host.append(
+      el("p.backup-hint", {}, "App lock is on. MemoryOS asks for your password every time it opens."),
+      el("div.about-actions", {},
+        el("button.btn", { type: "button", onclick: () => lock.lockNow() }, "Lock now"),
+        el("button.btn.btn-quiet", { type: "button", onclick: (e) => e.target.replaceWith(changeForm) }, "Change password"),
+        el("button.btn.btn-quiet", { type: "button", onclick: (e) => e.target.replaceWith(offForm) }, "Turn off lock")
+      )
+    );
+    return host;
+  }
+
+  _showRecoveryCode(host, code, message) {
+    const block = el("div.lock-form", {},
+      el("p.backup-hint", {}, message),
+      el("p.lock-code", {}, code),
+      el("button.btn", { type: "button", onclick: async (e) => {
+        try { await navigator.clipboard.writeText(code); e.target.textContent = "Copied"; } catch {}
+      } }, "Copy code"),
+      el("button.btn.btn-primary", { type: "button", onclick: () => this.render() }, "I wrote it down — done")
+    );
+    host.replaceChildren(el("h3.section-heading", {}, "App lock"), block);
   }
 
   _explainer() {

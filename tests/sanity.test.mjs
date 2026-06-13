@@ -8,6 +8,7 @@ import { dayKey, dayBounds } from "../js/services/journal-service.js";
 import { computeRewards, pointsFor, POINTS_BASE, POINTS_ON_TIME_BONUS } from "../js/services/rewards-service.js";
 import { planMerge, validateSnapshot, backupFilename, BACKUP_FORMAT, BACKUP_SCHEMA } from "../js/services/backup-service.js";
 import { renderMarkdown } from "../js/ui/manual-view.js";
+import { hashSecret, randomSaltHex, generateRecoveryCode, normalizeRecoveryCode, constantEqual } from "../js/services/lock-service.js";
 
 let passed = 0, failed = 0;
 function test(name, fn) {
@@ -228,5 +229,34 @@ test("about/manual views import cleanly without a DOM", async () => {
   await import("../js/ui/about-view.js");
 });
 
+// --- app lock crypto ---
+let asyncChecks = Promise.resolve();
+test("lock: PBKDF2 hash is deterministic per salt, distinct across salts", () => {
+  asyncChecks = (async () => {
+    const salt = randomSaltHex();
+    const a = await hashSecret("hunter2", salt);
+    const b = await hashSecret("hunter2", salt);
+    const c = await hashSecret("hunter2", randomSaltHex());
+    const d = await hashSecret("hunter3", salt);
+    if (a !== b) throw new Error("same input+salt must match");
+    if (a === c) throw new Error("different salts must differ");
+    if (a === d) throw new Error("different passwords must differ");
+    if (!/^[0-9a-f]{64}$/.test(a)) throw new Error("expected 256-bit hex");
+  })();
+});
+test("lock: recovery code format and forgiving normalization", () => {
+  const code = generateRecoveryCode();
+  assert(/^[A-HJ-KM-NP-Z2-9]{4}-[A-HJ-KM-NP-Z2-9]{4}-[A-HJ-KM-NP-Z2-9]{4}$/.test(code), code);
+  assert(normalizeRecoveryCode(" ab cd-EFgh-jkmn ") === "ABCDEFGHJKMN");
+  assert(normalizeRecoveryCode(code) === code.replace(/-/g, ""));
+});
+test("lock: constant-time-style compare", () => {
+  assert(constantEqual("abc", "abc") && !constantEqual("abc", "abd") && !constantEqual("abc", "abcd") && !constantEqual("abc", null));
+});
+test("lock screen module imports cleanly without a DOM", async () => {
+  await import("../js/ui/lock-screen.js");
+});
+
+await asyncChecks.catch(e => { failed++; console.error("FAIL  lock crypto — " + e.message); });
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

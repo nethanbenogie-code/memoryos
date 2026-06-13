@@ -707,3 +707,58 @@ button.chip:hover { border-color: var(--ink-soft); }
   font-size: 0.9em;
 }
 .manual-content em { font-style: italic; }
+
+/* ----------------------------- app lock ----------------------------- */
+
+.lock-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+.lock-card {
+  width: min(380px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+.lock-title { font-family: var(--serif); font-size: 20px; margin: 0; }
+.lock-line { margin: 0; color: var(--ink-soft); font-size: 14px; line-height: 1.6; }
+.lock-input {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  padding: 11px 12px;
+  text-align: center;
+}
+.lock-btn { padding: 11px; }
+.lock-error { margin: 0; min-height: 1.2em; color: #c0382b; font-size: 13px; }
+.lock-hint { margin: 0; color: var(--ink-soft); font-size: 13px; }
+.lock-code {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  background: var(--paper);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin: 0;
+  user-select: all;
+}
+.lock-ack { font-size: 13px; color: var(--ink-soft); display: flex; gap: 8px; align-items: center; justify-content: center; }
+.lock-form { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; margin-top: 8px; }
+.lock-form-input { width: min(320px, 100%); font-size: 14px; padding: 8px 10px; }
+.lock-form .lock-code { font-size: 18px; }

@@ -1,6 +1,6 @@
 # MemoryOS
 
-A **local-first personal memory operating system** — a digital extension of human memory. Capture anything in two seconds, see your life as a timeline, search every memory instantly, turn anything into a task with reminders that ring when due, earn points and streaks for finishing things, back up everything with one tap (or automatically, daily), share the app to any social network in one tap, and let each day write its own journal page.
+A **local-first personal memory operating system** — a digital extension of human memory. Capture anything in two seconds, see your life as a timeline, search every memory instantly, turn anything into a task with reminders that ring when due, earn points and streaks for finishing things, back up everything with one tap (or automatically, daily), share the app to any social network in one tap, optionally lock it behind a password with paper recovery codes, and let each day write its own journal page.
 
 **Your data never leaves your device.** MemoryOS stores everything in your browser's IndexedDB. The website only delivers the code; no server ever sees a memory.
 
