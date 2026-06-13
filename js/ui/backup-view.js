@@ -36,6 +36,15 @@ export class BackupView {
 
   async render() {
     const status = await backup.getBackupStatus();
+    // Attach storage estimate to the status object for the card
+    try {
+      if (navigator.storage?.estimate) {
+        const est = await navigator.storage.estimate();
+        status.storageUsed = est.usage ?? 0;
+        status.storageQuota = est.quota ?? 0;
+        status.persistent = await navigator.storage.persisted?.() ?? false;
+      }
+    } catch {}
 
     this.container.replaceChildren(
       el("header.view-head", {}, el("h2.view-title", {}, "Backup")),
@@ -369,4 +378,12 @@ export class BackupView {
       )
     );
   }
+}
+
+/** @param {number} bytes */
+function fmtBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
 }

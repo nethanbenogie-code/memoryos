@@ -22,12 +22,15 @@ import { getBackupStatus } from "./services/backup-service.js";
 import { shareApp } from "./ui/share.js";
 import { AboutView } from "./ui/about-view.js";
 import { ManualView } from "./ui/manual-view.js";
+import { SecondBrainView } from "./ui/second-brain-view.js";
+import { initMemoryCardCapture } from "./ui/memory-card-capture.js";
 import { isLockEnabled, lockNow } from "./services/lock-service.js";
 import { showLockScreen } from "./ui/lock-screen.js";
 import { initCelebrations } from "./ui/celebration.js";
 import { startReminderLoop } from "./services/reminder-service.js";
 
 const VIEWS = [
+  { id: "brain", label: "Second Brain", icon: "◈", View: SecondBrainView },
   { id: "timeline", label: "Timeline", icon: "◷", View: TimelineView },
   { id: "search", label: "Search", icon: "⌕", View: SearchView },
   { id: "tasks", label: "Tasks", icon: "☑", View: TasksView },
@@ -41,6 +44,14 @@ let currentView = null;
 let currentId = null;
 
 async function main() {
+  // Request persistent storage at boot. This tells the browser this
+  // data matters and should not be evicted when disk space is low.
+  // Works silently — no permission prompt shown to the user on most
+  // browsers when the app is installed as a PWA.
+  if (navigator.storage?.persist) {
+    navigator.storage.persist().catch(() => {});
+  }
+
   await openDatabase();
   if (await isLockEnabled()) await showLockScreen();
   searchIndex.build(await memoryService.listAll());
@@ -80,11 +91,12 @@ async function main() {
   document.getElementById("fab").addEventListener("click", openCapture);
 
   initCapture();
+  initMemoryCardCapture();
   bindCaptureShortcut();
   initCelebrations();
   startReminderLoop();
 
-  await showView("timeline", host);
+  await showView("brain", host);
   registerServiceWorker();
 
   // After a restore, rebuild the search index and re-render the open view.

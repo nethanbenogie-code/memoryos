@@ -9,6 +9,8 @@ import { computeRewards, pointsFor, POINTS_BASE, POINTS_ON_TIME_BONUS } from "..
 import { planMerge, validateSnapshot, backupFilename, BACKUP_FORMAT, BACKUP_SCHEMA } from "../js/services/backup-service.js";
 import { renderMarkdown } from "../js/ui/manual-view.js";
 import { hashSecret, randomSaltHex, generateRecoveryCode, normalizeRecoveryCode, constantEqual } from "../js/services/lock-service.js";
+import { SB_CATEGORIES, getLifeStats } from "../js/services/mnemosyne-service.js";
+import { MemoryType as MT2, ImportanceLevel, createMemoryCard, createMediaRef, MediaType } from "../js/data/models.js";
 
 let passed = 0, failed = 0;
 function test(name, fn) {
@@ -255,6 +257,35 @@ test("lock: constant-time-style compare", () => {
 });
 test("lock screen module imports cleanly without a DOM", async () => {
   await import("../js/ui/lock-screen.js");
+});
+
+// --- Project Mnemosyne ---
+test("models: new MemoryTypes exist", () => {
+  assert(MT2.MEMORY_CARD === "memory_card");
+  assert(MT2.LEARNING === "learning");
+  assert(MT2.ARTICLE === "article");
+});
+test("ImportanceLevel enum is correct", () => {
+  assert(ImportanceLevel.MILESTONE === 4 && ImportanceLevel.HIGH === 3);
+});
+test("createMemoryCard factory sets defaults", () => {
+  const card = createMemoryCard({ title: "Family Reunion 2026" });
+  assert(card.type === "memory_card");
+  assert(Array.isArray(card.extra.people) && card.extra.externalMedia.length === 0);
+  assert(card.extra.importanceLevel === ImportanceLevel.MEDIUM);
+});
+test("createMediaRef produces a valid reference", () => {
+  const ref = createMediaRef({ label: "Facebook → Family Archive", type: MediaType.FACEBOOK_ALBUM });
+  assert(ref.label === "Facebook → Family Archive" && ref.type === "facebook_album" && ref.id);
+});
+test("SB_CATEGORIES covers all expected filters", () => {
+  const ids = SB_CATEGORIES.map(c => c.id);
+  assert(ids.includes("all") && ids.includes("memory_card") && ids.includes("journal") && ids.includes("task"));
+});
+test("Mnemosyne modules import cleanly", async () => {
+  await import("../js/services/mnemosyne-service.js");
+  await import("../js/ui/second-brain-view.js");
+  await import("../js/ui/memory-card-capture.js");
 });
 
 await asyncChecks.catch(e => { failed++; console.error("FAIL  lock crypto — " + e.message); });

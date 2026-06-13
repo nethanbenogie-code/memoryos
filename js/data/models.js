@@ -36,6 +36,9 @@ export const MemoryType = Object.freeze({
   WEBSITE: "website",
   CONVERSATION: "conversation",
   GOAL: "goal",
+  MEMORY_CARD: "memory_card",
+  LEARNING: "learning",
+  ARTICLE: "article",
 });
 
 export const TaskStatus = Object.freeze({
@@ -50,13 +53,30 @@ export const Priority = Object.freeze({
   HIGH: 3,
 });
 
+export const ImportanceLevel = Object.freeze({
+  LOW: 1,
+  MEDIUM: 2,
+  HIGH: 3,
+  MILESTONE: 4,
+});
+
+export const MediaType = Object.freeze({
+  FACEBOOK_ALBUM: "facebook_album",
+  GOOGLE_PHOTOS: "google_photos",
+  ICLOUD: "icloud",
+  LOCAL_FOLDER: "local_folder",
+  EXTERNAL_DRIVE: "external_drive",
+  URL: "url",
+  OTHER: "other",
+});
+
 export const LinkType = Object.freeze({
   RELATES_TO: "relates_to",
   PART_OF: "part_of",
   MENTIONS: "mentions",
 });
 
-const VALID_TYPES = new Set(Object.values(MemoryType));
+const VALID_TYPES = new Set(Object.values(MemoryType)); // auto-includes new types
 const VALID_STATUSES = new Set(Object.values(TaskStatus));
 
 /**
@@ -142,6 +162,42 @@ export function createLink(sourceId, targetId, linkType = LinkType.RELATES_TO) {
 }
 
 /** Normalize a tag list: trim, lowercase, strip '#', dedupe, drop empties. */
+/**
+ * Create a Memory Card — the cognitive anchor for a life event.
+ * The card stores meaning and a pointer; actual photos live elsewhere.
+ * @param {Partial<MemoryObject> & {title: string}} fields
+ */
+export function createMemoryCard(fields = {}) {
+  return createMemory({
+    ...fields,
+    type: MemoryType.MEMORY_CARD,
+    extra: {
+      people: fields.people ?? [],
+      location: fields.location ?? "",
+      externalMedia: fields.externalMedia ?? [],
+      importanceLevel: fields.importanceLevel ?? ImportanceLevel.MEDIUM,
+      reflection: fields.reflection ?? "",
+      category: fields.category ?? "personal",
+      ...fields.extra,
+    },
+  });
+}
+
+/**
+ * Create an external media reference — the "cognitive link" that wires
+ * a Memory Card to wherever the actual photos live.
+ * @param {{label: string, type?: string, path?: string}} opts
+ */
+export function createMediaRef(opts = {}) {
+  return {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+    label: opts.label ?? "",
+    type: opts.type ?? MediaType.OTHER,
+    path: opts.path ?? "",
+    addedAt: new Date().toISOString(),
+  };
+}
+
 export function normalizeTags(tags) {
   if (!Array.isArray(tags)) return [];
   const seen = new Set();
@@ -180,6 +236,16 @@ export function typeLabel(type) {
     [MemoryType.WEBSITE]: "Website",
     [MemoryType.CONVERSATION]: "Conversation",
     [MemoryType.GOAL]: "Goal",
+    [MemoryType.MEMORY_CARD]: "Memory Card",
+    [MemoryType.LEARNING]: "Learning",
+    [MemoryType.ARTICLE]: "Article",
+    [MemoryType.REMINDER]: "Reminder",
+    [MemoryType.MEETING]: "Meeting",
+    [MemoryType.PERSON]: "Person",
+    [MemoryType.PROJECT]: "Project",
+    [MemoryType.FILE]: "File",
+    [MemoryType.WEBSITE]: "Website",
+    [MemoryType.CONVERSATION]: "Conversation",
   };
   return labels[type] ?? type;
 }

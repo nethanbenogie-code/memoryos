@@ -16,6 +16,8 @@ const CAPTURE_TYPES = [
   MemoryType.IDEA,
   MemoryType.TASK,
   MemoryType.EVENT,
+  MemoryType.LEARNING,
+  MemoryType.ARTICLE,
 ];
 
 /** @type {HTMLDialogElement|null} */

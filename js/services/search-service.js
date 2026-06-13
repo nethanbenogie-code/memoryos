@@ -138,12 +138,24 @@ export function tokenize(text) {
 
 /** All searchable tokens of a memory. @param {Object} memory */
 function tokensOf(memory) {
-  return new Set([
+  const tokens = new Set([
     ...tokenize(memory.title),
     ...tokenize(memory.content),
     ...memory.tags,
     memory.type,
   ]);
+  // Index Memory Card extras for people, location, reflection search
+  if (memory.extra) {
+    for (const person of memory.extra.people ?? []) {
+      for (const t of tokenize(person)) tokens.add(t);
+    }
+    for (const t of tokenize(memory.extra.location ?? "")) tokens.add(t);
+    for (const t of tokenize(memory.extra.reflection ?? "")) tokens.add(t);
+    for (const ref of memory.extra.externalMedia ?? []) {
+      for (const t of tokenize(ref.label ?? "")) tokens.add(t);
+    }
+  }
+  return tokens;
 }
 
 /** @param {Set} a @param {Set} b */

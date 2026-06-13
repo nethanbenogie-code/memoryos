@@ -1,10 +1,8 @@
 # MemoryOS — User Manual
 
-Welcome to MemoryOS, your personal memory operating system. MemoryOS helps you capture anything worth remembering in seconds, see your life on a timeline, find any memory instantly, turn thoughts into tasks, and let each day write its own journal page.
+Welcome to MemoryOS, your personal memory operating system — a private, local-first second brain that helps you capture what matters, preserve meaningful experiences, reflect on your life, and act on what needs doing. Everything stays on your own device. No account, no server, no one else can see a word.
 
-Everything you save stays **on your own device**. MemoryOS has no account, no server, and no one — not even the person hosting the website — can see your memories.
-
-This manual covers everything you need. It takes about ten minutes to read, but you can also just open the app and press the **+ Capture** button; MemoryOS is designed to explain itself.
+This manual covers everything you need. It takes about fifteen minutes to read in full, but you can also just open the app and explore — MemoryOS is designed to explain itself as you go.
 
 ---
 
@@ -16,7 +14,7 @@ MemoryOS runs in your web browser. Open the app's web address on any phone, tabl
 
 ### Installing it as an app (recommended)
 
-Installing puts MemoryOS on your home screen or desktop, makes it open full-screen like a native app, and protects your data from being cleaned up by the browser.
+Installing puts MemoryOS on your home screen or desktop, makes it open full-screen like a native app, and tells the browser that your data is important and should not be cleared automatically.
 
 **On Android (Chrome):** open the app, tap the **⋮** menu, then tap **Add to Home screen** (or **Install app**), and confirm.
 
@@ -28,214 +26,299 @@ After installing, MemoryOS works even with no internet connection. Your memories
 
 ### The main screen
 
-On a computer you'll see a sidebar on the left with five views — **Timeline**, **Search**, **Tasks**, **Journal**, and **Backup** — plus a **+ Capture** button, a share button, and links to **About MemoryOS** and this **User manual**, which you can read right inside the app, even offline. On a phone, the same five views sit in a bar at the bottom of the screen, a round **+** button floats above it for capturing, and you'll find the app lock, About, and the manual inside the **Backup** tab.
+On a computer you'll see a sidebar on the left with six views — **Second Brain**, **Timeline**, **Search**, **Tasks**, **Journal**, and **Backup** — plus a **+ Capture** button, a share button, and links to **About MemoryOS** and this **User manual** (readable inside the app, even offline). On a phone, the same six views sit in a bar at the bottom of the screen, a round **+** button floats above it for quick capture, and the app lock, About, and the manual are inside the **Backup** tab.
 
 ---
 
-## 2. Capturing a memory
+## 2. Second Brain — your life timeline
 
-Capturing is the heart of MemoryOS. The goal: from thought to saved memory in under five seconds.
+The **Second Brain** is the heart of MemoryOS and the first thing you see when you open the app. It is a calm, chronological record of your life — not a social feed, not a productivity board, but a private history of what actually mattered.
+
+### What appears here
+
+The Second Brain collects every meaningful thing you save: Memory Cards, journal entries, learning records, saved articles, notes, ideas, and completed tasks (shown as achievements). Routine noise — pending tasks, reminders — stays out. Only things worth remembering make it onto this timeline.
+
+Entries are grouped by month and sorted by when they *happened*, not when you typed them. A family gathering from three years ago sits exactly where it belongs: in its month, in its year.
+
+### Today's Memory Context
+
+At the top of the Second Brain, before the timeline begins, sits the **Today's Memory Context** widget. It surfaces three things:
+
+- **Upcoming anniversaries** — Memory Cards and events whose date is within the next two weeks, with "N years ago" shown so you can mark them intentionally.
+- **On this day in past years** — journal entries and Memory Cards from the same calendar day in previous years, so the past feels present.
+- **A recent reflection** — your own words from a Memory Card or note that has a reflection written on it.
+
+The purpose of this widget is to anchor you in your own life *before* you open social media or the news. MemoryOS should always be the first thing you look at in the morning.
+
+### Life stats
+
+A quiet row below the header shows how much of your life is already in MemoryOS: how many Memory Cards, journal entries, learning records, people tagged, and years of memory. These numbers grow slowly and honestly — they are evidence of accumulation, not productivity metrics.
+
+### Category filters
+
+Filter the timeline by: **All**, **Memory Cards**, **Journal**, **Learning**, **Articles**, **Notes**, **Achievements**, **Events**.
+
+---
+
+## 3. Memory Cards
+
+A Memory Card is the most powerful thing in MemoryOS. It is a structured record of a meaningful life event — a family reunion, a milestone, a trip, a celebration — that preserves the *meaning* and *context* of the experience, not just the photos.
+
+### Why not just use photos?
+
+Photos capture a moment. A Memory Card captures *why that moment mattered*. Who was there. Where you were. What you felt. What you want to remember. And crucially — a pointer to where the photos actually live, so you never have to choose between MemoryOS and your preferred photo storage.
+
+### Creating a Memory Card
+
+Press **+ Memory Card** in the Second Brain header. A form opens with these fields:
+
+- **Title** — e.g. "Family Reunion 2026"
+- **Date it happened** — when the event occurred, not when you're recording it
+- **Category** — Personal, Family, Friends, Travel, Work, Health, Learning, Milestone, Celebration, Other
+- **Description** — what happened, who was there, what made it worth remembering
+- **People** — comma-separated names: Mom, Dad, Anna, Carlo
+- **Location** — e.g. "Grandmother's house, Mainit, Surigao del Norte"
+- **Importance** — Low, Meaningful, Important, or **Life Milestone**
+- **Reflection** — your own words for future you: *"Need to make this an annual tradition."*
+- **Where are the photos?** — the Cognitive Link (see below)
+- **Tags** — #family #reunion #2026
+
+Press **Save Memory Card** and it appears immediately in your Second Brain timeline.
+
+### Life Milestones
+
+Set Importance to **Life Milestone** and the card gets a gold left border and a ⬟ badge in the timeline. Use this sparingly — graduation, a wedding, a birth, a loss, a turning point. When you scroll your timeline years from now, these stand out.
+
+---
+
+## 4. Cognitive Linking — where are the photos?
+
+MemoryOS does not store photos and never will. That is a feature, not a limitation.
+
+Photos can stay wherever they already are — Facebook, Google Photos, iCloud, a local folder, an external drive. MemoryOS stores a **text reference** that tells future-you exactly where to find them. This reference is called a **Cognitive Link**.
+
+### Setting up a Cognitive Link
+
+Inside the Memory Card form, under "Where are the photos?", press **+ Add where the photos are stored**. Choose a storage type, then write the path in plain words:
+
+- **Facebook album** → `Facebook → MemoryOS - Family Archive → Family Reunion 2026`
+- **Google Photos** → `Google Photos → Travel → Japan 2025`
+- **iCloud** → `iCloud → Shared Albums → Family 2026`
+- **Local folder** → `D:\Photos\2026\Family Reunion`
+- **External drive** → `Family Backup SSD → 2026 → Events`
+
+You can add more than one link to a single Memory Card — for example, if photos are spread across a Facebook album and a local backup drive.
+
+### The Family Archive habit
+
+When you experience an important family event, do two things: upload your best photos to a private album called **MemoryOS - Family Archive** (in Facebook, Google Photos, or wherever you prefer), then create a Memory Card in MemoryOS with a Cognitive Link pointing there.
+
+MemoryOS becomes the *map*. The photo platform becomes the *storage*. You control both, and neither owns your memories.
+
+### Why this matters
+
+Most people's important photos are scattered across five apps, three old phones, and two hard drives, with no context attached to any of them. A Memory Card fixes that: the meaning, the people, the reflection, and the location of the photos — all in one place, searchable, private, and yours.
+
+---
+
+## 5. Quick Capture
+
+Capturing is for everything that crosses your mind and deserves to exist somewhere. The goal: from thought to saved memory in under five seconds.
 
 **Open capture** any of these ways: click **+ Capture** in the sidebar, tap the round **+** button on your phone, or press **Ctrl+K** (**⌘K** on Mac) from anywhere in the app.
 
-**Pick a type** at the top of the capture box: **Note**, **Idea**, **Task**, or **Event**. If you don't choose, it's saved as a Note — you can always turn it into a task later.
+**Pick a type:** Note, Idea, Task, Event, **Learning**, or **Article**. If you don't choose, it's saved as a Note.
 
-**Write, then press Enter.** That's it. A few helpful rules:
+**Write, then press Enter.** A few helpful rules:
 
-- The **first line becomes the title**. Anything after the first line becomes the body of the memory.
-- Type **#tags anywhere** in your text and MemoryOS files them automatically. For example: `Call the supplier about the new receipt printer #apos #suppliers` saves a memory titled "Call the supplier about the new receipt printer" with the tags *apos* and *suppliers*.
-- Press **Shift+Enter** if you want a new line instead of saving.
-- Press **Esc** to close the capture box without saving.
+- The **first line becomes the title**. Anything after the first line becomes the body.
+- Type **#tags anywhere** and MemoryOS files them automatically. `Call the supplier #apos #urgent` saves a note titled "Call the supplier" with the tags *apos* and *urgent*.
+- Press **Shift+Enter** for a new line instead of saving.
+- Press **Esc** to close without saving.
 
-Don't overthink capture. A messy three-word memory you actually saved is worth more than a perfect one you never wrote down. You can search for it later — that's the whole point.
+**Learning** and **Article** types flow directly into the Second Brain timeline under their own category filter — use Learning for courses, books, and skills; use Article for intentionally saved pieces worth returning to.
 
----
-
-## 3. The Timeline
-
-The Timeline shows every memory you've ever saved, newest first, grouped by day under dated headings. A vertical line — the *spine* — runs down the page, and each memory hangs from it with a colored dot: indigo for notes, violet for ideas, amber for tasks, teal for events. Today's heading carries a **Today** badge.
-
-Use the filter chips at the top (**All**, **Notes**, **Ideas**, **Tasks**, **Events**, **Journals**) to see just one kind of memory.
-
-Memories appear on the timeline at the moment they *happened*, not just when you typed them — so the timeline reads like the story of your days.
-
-### What you can do with any memory card
-
-- **Make a task** — turns the memory into a task with one click. The text stays the same; it simply becomes actionable.
-- **Delete** — removes the memory from view. Deleted memories are archived, not destroyed (see section 10).
-- **Tap a #tag** — in Search, tapping a tag shows everything that shares it.
+Don't overthink capture. A messy three-word memory you actually saved is worth more than a perfect one you never wrote down.
 
 ---
 
-## 4. Search
+## 6. The Timeline
 
-Open **Search** and just start typing — results appear with every letter, even with thousands of memories, because the search runs entirely on your device.
+The **Timeline** is the complete chronological record of everything you've ever saved in MemoryOS — every type, every day, without filtering. A vertical spine runs down the page with colored dots: indigo for notes, violet for ideas, amber for tasks, teal for events. Today's heading carries a **Today** badge.
+
+Use the filter chips at the top (All, Notes, Ideas, Tasks, Events, Journals) to see one kind at a time.
+
+The Timeline and the Second Brain show the same data from different angles. The Second Brain filters for *meaning*; the Timeline shows *everything*.
+
+---
+
+## 7. Search
+
+Open **Search** and start typing — results appear with every letter, even across thousands of memories, because search runs entirely on your device.
+
+**Search finds everything:** titles, content, tags, and Memory Card extras — people's names, locations, reflections, and even the text of your Cognitive Links. Searching *"Mom"* finds every Memory Card that mentions Mom anywhere.
 
 Tips for finding things fast:
 
-- You don't need full words. Typing `rec` already finds "receipt", "recipe", and "recommendation".
-- Multiple words narrow the search: `printer supplier` finds memories containing both.
-- Use the **type chips** to limit results to tasks, ideas, notes, events, or journal pages.
-- Your most-used **#tags** appear as chips with counts — tap one to filter by it, tap again to clear it.
+- You don't need full words. `rec` already finds "receipt", "recipe", "recommendation".
+- Multiple words narrow the search: `family reunion` finds memories containing both.
+- Use type chips to filter by Memory Cards, tasks, journal, articles, and more.
+- Your most-used **#tags** appear as chips with counts — tap one to filter, tap again to clear.
 - Search works in any language you write in, including Filipino.
-
-If nothing matches, loosen the filters or try a shorter word.
 
 ---
 
-## 5. Tasks
+## 8. Tasks
 
 The **Tasks** view gathers every task into three columns: **Pending**, **In progress**, and **Completed**.
 
-Every task card has a status button. Click it to move the task forward: Pending → In progress → Completed. Clicking a completed task's button reopens it back to Pending — useful for things that turned out not to be done after all.
+Every task card has a status button. Click it to move the task forward: Pending → In progress → Completed. Clicking a completed task's button reopens it to Pending.
 
-There are two ways a task is born: capture it directly with the **Task** chip in the capture box, or press **Make a task** on any existing note, idea, or event. Anything you've ever written down can become something you act on — that's a core idea of MemoryOS.
+Two ways a task is born: capture it with the **Task** chip in quick capture, or press **Make a task** on any existing note or idea. Anything you've written can become something you act on.
 
-When you complete a task, it's recorded with the exact time — and it will appear in that day's Journal page under "Completed this day". Completing tasks also earns you points (section 7), and any task can carry a reminder that rings when it's due (section 6).
+Completed tasks earn points (section 10) and appear in that day's Journal under "Completed this day." They also appear in the Second Brain timeline as **Achievements** — finishing things is part of your life story.
 
 ---
 
-## 6. Reminders
+## 9. Reminders
 
 Any task can ring a bell at the right moment.
 
-**Setting a reminder.** On any task card, press **⏰ Remind me**, pick a date and time, and press **Set**. The first time you do this, your browser will ask whether MemoryOS may show notifications — choose **Allow** if you want reminders to appear as system notifications, the same kind other apps show.
+**Setting a reminder.** On any task card, press **⏰ Remind me**, pick a date and time, and press **Set**. The first time you do this, your browser will ask whether MemoryOS may show notifications — choose **Allow** if you want system-level alerts.
 
-**What happens at the due time.** MemoryOS plays a soft chime, shows a message inside the app, and — if you allowed notifications — shows a system notification even when you're in another tab or another app. The task's badge turns red so overdue work is impossible to miss on the board.
+**What happens at the due time.** MemoryOS plays a soft chime, shows a toast message, and — if you allowed notifications — shows a system notification even when you're in another tab. The task badge turns red so overdue work is impossible to miss.
 
-**Changing or removing a reminder.** Press the **×** beside the due badge to remove it, or remove it and set a new time. Changing the time re-arms the reminder so it will ring again at the new moment.
-
-**One honest limitation.** MemoryOS has no server — that's what keeps your memories private — and without a server, no website can ring your phone while it's completely closed. So reminders fire while MemoryOS is open, even just in a background tab. If a reminder came due while the app was closed, it rings the moment you next open it, and the red overdue badge makes sure nothing slips past you. On a phone, installing MemoryOS (section 1) and leaving it in your recent apps is enough for most reminders to land on time.
+**One honest limitation.** MemoryOS has no server — that's what keeps your memories private. Without a server, no website can ring your phone while the app is completely closed. Reminders fire while MemoryOS is open, even in a background tab. If a reminder came due while the app was closed, it rings the moment you next open it.
 
 ---
 
-## 7. Points, streaks, and levels
+## 10. Points, streaks, and levels
 
 Finishing things should feel good — so MemoryOS makes sure it does.
 
-**Every completed task earns points.** The moment you press a task into **Completed**, confetti bursts, a chime plays, and a message shows your points: **10 points** for any completed task, **15** if you finished it on or before its reminder time. (Finishing late still earns the full 10 — MemoryOS rewards effort and never punishes lateness.)
+**Every completed task earns points:** 10 points for any completion, 15 if you finished on or before its reminder time. Finishing late still earns the full 10 — MemoryOS rewards effort and never punishes lateness.
 
-**Levels.** Points add up toward levels — every 100 points lifts you one level, each with its own title, from *Spark* upward. The Tasks view shows your level, your total, today's earnings, and a progress bar filling toward the next level.
+**Levels.** Every 100 points lifts you one level, from *Spark* upward through *Collector*, *Organizer*, *Finisher*, *Pathfinder*, *Architect*, *Keeper of Days*, and *Memory Master*. The Tasks view shows your level, total points, today's earnings, and a progress bar.
 
-**Streaks.** Complete at least one task a day and your streak grows — you'll see it as **🔥 3-day streak** and counting. A streak is never used against you: if you miss a day, nothing scolds you, nothing is "lost" with a sad sound. The counter simply starts again, ready for a new run. The fire is there to celebrate consistency, not to manufacture guilt.
+**Streaks.** Complete at least one task a day and your streak grows — shown as 🔥 3-day streak. A broken streak restarts quietly. No guilt, no dramatic sound. The fire celebrates consistency; it is never used against you.
 
-**Where the numbers come from.** Your points are calculated live from your actual completed tasks — there is no separate score that can drift or break. Delete a task and its points honestly go with it; that's the system staying truthful.
-
----
-
-## 8. The Daily Journal
-
-Open **Journal** and today's page is simply there — MemoryOS creates it for you the first time you visit each day. A journal page has three parts:
-
-**Your reflection.** A free-writing space at the top. Write how the day went, what you're thinking, anything at all. It **saves automatically as you type** — you'll see "Saved" appear below the box. No save button to forget.
-
-**Captured this day.** Every memory you saved that day, gathered in one place.
-
-**Completed this day.** Every task you finished that day — even ones you created weeks earlier. This is your daily proof of progress.
-
-Use the **‹** and **›** arrows beside the date to walk backward and forward through past days. Reading last week's pages is one of the quiet pleasures of MemoryOS: the app remembers your days so you can revisit them.
-
-Journal pages are memories too — they appear on the Timeline and in Search like everything else.
+**Where the numbers come from.** Points are calculated live from your actual completed tasks. Delete a task and its points honestly go with it.
 
 ---
 
-## 9. Backing up your memories
+## 11. The Daily Journal
 
-If you read only one section of this manual, read this one — or skip it and just remember: **there's a Backup tab; tap the big button once a week.**
+Open **Journal** and today's page is simply there — MemoryOS creates it automatically on first visit each day. A journal page has three parts:
 
-**Back up now.** Open **Backup** and press **⬇ Back up now**. One tap — MemoryOS saves a single file (named like `memoryos-backup-2026-06-13.json`) to your device. That file contains every memory you have. Keep it somewhere safe.
+**Your reflection.** A free-writing space at the top — write how the day went, what you're thinking, anything at all. It saves automatically as you type.
 
-**Share backup (phones).** On a phone you'll also see **📤 Share backup** — it opens your normal share menu so you can send the backup straight to Google Drive, email it to yourself, or message it to your own account. The safest backup is one that lives in a second place.
+**Captured this day.** Every memory saved that day, gathered in one place.
 
-**Automatic backup (set and forget).** On Chrome and Edge, press **Choose a backup folder** and pick any folder once — your Documents folder, a synced Drive folder, a USB drive. From then on, MemoryOS silently saves a dated backup file there every day you use the app. You never have to think about it again. If the browser ever pauses the permission, the Backup tab will show one button to turn it back on.
+**Completed this day.** Every task finished that day — even ones created weeks earlier. This is your daily proof of progress.
 
-**Restoring.** On a new device (or after data loss), open MemoryOS, go to **Backup → Restore from a backup file**, and pick your backup. Restoring is gentle by design: it adds what's missing and keeps whichever copy of each memory is newer. It never erases anything, and restoring the same file twice changes nothing — so you can't break anything by clicking it.
-
-**The amber dot.** If it's been more than a week since your last backup, a small amber dot appears on the Backup tab. No nagging popups, no guilt — just a quiet reminder that one tap keeps your memories safe.
+Use the **‹** and **›** arrows to walk through past days. Journal entries also appear in the Second Brain timeline, and in the **On this day** widget when their anniversary comes around.
 
 ---
 
-## 10. Locking the app (optional, recommended)
+## 12. Backing up your memories
 
-If other people use your device, you can put a password on MemoryOS so only you can open it. It's optional — and recommended if your phone or computer is ever in someone else's hands.
+**There's a Backup tab. Tap the big button once a week.** That's all most people need to know.
 
-**Turning it on.** Open the **Backup** tab, find **App lock**, press **Set up app lock**, choose a password (at least 4 characters), and optionally write a hint. You'll then be shown a **recovery code** that looks like `ABCD-EFGH-JKMN`.
+**Back up now.** Open **Backup** and press **⬇ Back up now**. MemoryOS saves a single file (named like `memoryos-backup-2026-06-13.json`) containing every memory, every Memory Card, every Cognitive Link, every journal entry. Keep it somewhere safe.
 
-**Write the recovery code on paper. This part matters.** Because MemoryOS has no server and no email, there is no "send me a reset link" — the recovery code *is* your reset. It's shown only once. Write it down and keep it somewhere away from your device. If you forget your password and have the code, you're back in; if you lose both, no one can unlock the app, not even you. That's what makes it a real lock.
+**Share backup (phones).** Tap **📤 Share backup** to send the file straight to Google Drive, email, or any app via your phone's share menu. The safest backup lives in a second place.
 
-**Using it.** From then on, MemoryOS asks for your password each time it opens. Get it right and you're in. There's also a **Lock now** button in the Backup tab for when you hand your device to someone.
+**Automatic backup (set and forget).** On Chrome and Edge, press **Choose a backup folder** and pick a folder once. MemoryOS silently saves a dated backup there every day you use the app.
 
-**Forgot your password?** On the lock screen, press **Forgot password?**, enter your recovery code, and set a new password. You'll receive a brand-new recovery code — write that one down too, because the old one stops working.
+**Restoring.** Go to **Backup → Restore from a backup file** and pick your backup. Restoring merges: it adds what's missing and keeps whichever copy of each memory is newer. It never erases anything, and restoring the same file twice changes nothing.
 
-**Changing or removing the lock.** In the Backup tab you can change your password (which issues a fresh recovery code) or turn the lock off entirely — both ask for your current password first.
-
-**One honest note about what the lock does.** The app lock keeps other people from opening MemoryOS — like a PIN on your phone. It is a door lock, not a vault: a determined expert with full access to your device could still reach the raw data underneath. For the everyday purpose of keeping family, friends, or coworkers out of your memories, it does exactly its job.
+**The amber dot.** If it's been more than a week since your last backup, a small amber dot appears on the Backup tab — a quiet visual nudge, no popup required.
 
 ---
 
-## 11. Your data and your privacy
+## 13. Locking the app (optional, recommended)
 
-This section matters more than any other. Please read it.
+**Turning it on.** Open the **Backup** tab, find **App lock**, press **Set up app lock**, choose a password (at least 4 characters), and optionally add a hint. You'll then be shown a **recovery code** like `ABCD-EFGH-JKMN`.
 
-**Where your memories live.** Everything is stored inside your browser's private storage *on this device*. Nothing is uploaded. There is no account, no password, no cloud, no analytics. If you open MemoryOS on your phone and on your laptop, each device has its own separate set of memories (device-to-device sync is planned as an optional future feature).
+**Write the recovery code on paper — this part matters.** There is no "send me a reset link" because there is no server. The recovery code is your only way back in if you forget your password. It's shown exactly once.
 
-**What Delete really does.** Deleting a memory hides it everywhere, but MemoryOS archives it rather than destroying it. A memory system should never truly forget by accident. A future version will let you view and restore archived memories.
+**Using it.** From that point on, MemoryOS asks for your password every time it opens. There's also a **Lock now** button for when you hand your device to someone.
 
-**One real warning.** Because memories live in browser storage, **clearing your browser's data (history / cookies / site data) for this site will erase your memories.** Be careful with browser "cleaner" apps that wipe site data. Two habits protect you: install MemoryOS as an app (section 1), which tells the browser this data is important, and avoid "clear all browsing data" sweeps that include site data. A one-tap backup-to-file feature is coming in the next version — until then, treat this warning seriously.
+**Forgot your password?** On the lock screen, press **Forgot password?**, enter your recovery code, and set a new password. You'll receive a new recovery code — write it down, because the old one stops working immediately.
+
+**What the lock does (and doesn't do).** The lock keeps other people from opening MemoryOS — like a PIN on your phone. It is a door lock, not a vault: a determined expert with full device access could still reach the raw data. For the everyday purpose of keeping family, friends, or coworkers out of your memories, it does exactly its job.
+
+---
+
+## 14. Your data and your privacy
+
+**Where your memories live.** Everything is stored inside your browser's private storage on this device. Nothing is uploaded. No account, no analytics, no cloud. If you open MemoryOS on your phone and your laptop, each device has its own separate set of memories.
+
+**Cognitive Links are just text.** When you record where your photos are stored, MemoryOS stores only the text you typed — a description like "Facebook → Family Archive." It never accesses Facebook, Google Photos, or any other service. No API keys, no permissions, no tracking.
+
+**What Delete really does.** Deleting a memory hides it everywhere but archives it rather than destroying it. A memory system should never forget by accident.
+
+**One real warning.** Clearing your browser's data for this site will erase your memories. Be careful with browser "cleaner" apps. Three habits protect you: install MemoryOS as an app (section 1), use the Backup tab (section 12), and avoid "clear all browsing data" sweeps that include site data.
 
 **Private/incognito windows** don't keep site data — memories saved there vanish when the window closes. Always use a normal window.
 
 ---
 
-## 12. Working offline
+## 15. Working offline
 
-Once you've opened MemoryOS one time, it works with no internet at all — on a bus, on a ferry, during a brownout. Capture, search, tasks, journal: everything functions identically because nothing ever depended on a connection.
+Once you've opened MemoryOS one time, it works with no internet at all — on a bus, on a ferry, during a brownout. Second Brain, capture, search, tasks, journal, Memory Cards: everything works identically offline.
 
-When the app's developer publishes an update, you'll receive it automatically the next time you open MemoryOS while online.
-
----
-
-## 13. Keyboard shortcuts
-
-MemoryOS keeps shortcuts few and worth memorizing. **Ctrl+K** (**⌘K** on Mac) opens Quick Capture from anywhere. Inside the capture box, **Enter** saves the memory, **Shift+Enter** adds a new line, and **Esc** closes without saving.
+When an update is published, you'll receive it automatically the next time you open MemoryOS while online.
 
 ---
 
-## 14. Troubleshooting
+## 16. Keyboard shortcuts
 
-**The app shows a blank page or won't start.** Reload the page once. If it persists, make sure JavaScript is enabled and your browser is reasonably up to date (any browser from the last few years is fine).
-
-**My memories disappeared.** Check three things: Are you in a private/incognito window? Are you using a different browser or device than the one you saved them on (each keeps its own data)? Did a cleaner app or "clear browsing data" run recently? If the answer to all three is no, reload the app once — and if they're still gone, report it on the project's GitHub page.
-
-**Search can't find something I know I saved.** Check whether a type or #tag filter chip is still active and tap it off. Filters quietly narrow every search until cleared.
-
-**The install option doesn't appear.** On iPhone, installation only works from Safari, via Share → Add to Home Screen. On desktop, the install icon only appears in Chrome and Edge. Firefox on desktop doesn't support installing, but the app still works fully in the browser tab.
-
-**Reminders don't show system notifications.** Check that you allowed notifications for MemoryOS in your browser's site settings, and that your device isn't in Do Not Disturb / Focus mode. Remember that MemoryOS must be open — at least in a background tab — for a reminder to ring at its exact time; otherwise it rings when you next open the app.
-
-**I forgot my password and my recovery code.** There is deliberately no way around the lock without one of them — that's what keeps it secure. If you have a backup file from before (section 9), you can install MemoryOS fresh on another device or browser, restore the backup there, and leave the lock off.
-
-**Restore says “already up to date”.** That's good news, not an error — it means everything in that backup file is already on this device.
-
-**Today's journal shows yesterday's date.** Journal days follow your device's clock and timezone — check your device's date and time settings.
+**Ctrl+K** (**⌘K** on Mac) opens Quick Capture from anywhere in the app. Inside the capture box: **Enter** saves, **Shift+Enter** adds a new line, **Esc** closes without saving.
 
 ---
 
-## 15. Sharing MemoryOS with friends
+## 17. Troubleshooting
 
-If MemoryOS helps you, the kindest thing you can do is pass it on — and the safest, because everyone gets their **own private copy**. Sharing the app never shares your memories; a friend who opens your link starts with a completely empty MemoryOS of their own.
+**The app shows a blank page or won't start.** Reload once. If it persists, make sure JavaScript is enabled and your browser is reasonably up to date.
 
-On a computer, press **♡ Share MemoryOS** at the bottom of the sidebar. On a phone, open the **Backup** tab and press **♡ Share MemoryOS** under "Tell a friend." Phones open your normal share menu — Facebook, Messenger, WhatsApp, Telegram, anything you have. Computers show share buttons for the major networks plus **Copy link**, which you can paste anywhere.
+**My memories disappeared.** Check: Are you in a private/incognito window? Are you on a different device or browser than where you saved them? Did "clear browsing data" run recently? If no to all three, reload once. If still gone, report it on the project's GitHub page.
 
-MemoryOS is free and open source, with no account, no ads, and nothing to sign up for — so share it without hesitation.
+**The Second Brain timeline is empty.** The Second Brain only shows meaningful entries. Create your first Memory Card with **+ Memory Card**, or complete a task to see it appear as an Achievement.
+
+**Today's Memory Context shows nothing.** This widget fills up over time. After you've created Memory Cards with dates in past years, the "On this day" and "Upcoming anniversaries" sections will populate automatically. Check back after your first month of use.
+
+**Search can't find a Memory Card.** Search covers all Memory Card fields — title, description, people names, location, reflection, and Cognitive Link text. Check that no type or tag filter chip is active and narrowing results.
+
+**Reminders don't show system notifications.** Check that you allowed notifications for MemoryOS in your browser's site settings, and that your device isn't in Do Not Disturb mode. MemoryOS must be open (even in a background tab) for a reminder to ring at its exact time.
+
+**I forgot my password and my recovery code.** There is deliberately no bypass — that's what makes it a real lock. If you have a backup file, install MemoryOS fresh on another device or browser, restore the backup there, and leave the lock off.
+
+**Restore says "already up to date".** Good news — everything in that backup is already on this device. Nothing was lost.
+
+**Today's journal shows yesterday's date.** Journal days follow your device's clock — check your device's date and time settings.
 
 ---
 
-## 16. A way to use MemoryOS well
+## 18. Sharing MemoryOS with friends
 
-Tools don't build habits; small routines do. Here is one that works:
+If MemoryOS helps you, the kindest thing you can do is pass it on. Sharing the app never shares your memories — a friend who opens your link starts with a completely empty MemoryOS of their own.
 
-Capture *everything* in the moment, without sorting — ideas, errands, things people say, prices, verses, half-thoughts. Trust `#tags` and Search to organize for you. Once a day, open the **Journal**, read what the day collected, write three honest sentences, and press the status button on anything you finished. Once a week, scroll the **Timeline** and let it show you where your time actually went.
+On a computer, press **♡ Share MemoryOS** at the bottom of the sidebar. On a phone, open **Backup** and press **♡ Share MemoryOS** under "Tell a friend." Phones open your normal share menu — Facebook, Messenger, WhatsApp, Telegram, anything you have. Computers show direct share buttons plus **Copy link**.
+
+MemoryOS is free and open source. No account, no ads, nothing to sign up for — share without hesitation.
+
+---
+
+## 19. A way to use MemoryOS well
+
+Tools don't build habits; routines do. Here is one that works:
+
+**Every day:** open the **Second Brain** first, before social media. Read the Today's Memory Context — let your own life anchor you before the algorithm gets a turn. Capture anything that crosses your mind during the day, without sorting. In the evening, open **Journal**, write three honest sentences, and mark anything you finished as completed.
+
+**Once a week:** scroll the **Second Brain** timeline for the month. Create a Memory Card for anything that happened worth remembering — a meal, a conversation, a moment. Back up your memories.
+
+**Once a year:** scroll back through your Memory Cards. Read the reflections you wrote. You will be surprised what you forgot you said — and grateful you wrote it down.
 
 Your memory is for thinking. Let MemoryOS do the remembering.
 
