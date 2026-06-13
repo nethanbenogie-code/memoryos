@@ -113,7 +113,7 @@ export class TasksView {
           el("h3.column-heading", {}, label, el("span.column-count", {}, String(column.length))),
           column.length
             ? column.map((task) => memoryCard(task, { showTime: false }))
-            : el("p.column-empty", {}, "Nothing here.")
+            : [el("p.column-empty", {}, "Nothing here.")]
         );
       })
     );

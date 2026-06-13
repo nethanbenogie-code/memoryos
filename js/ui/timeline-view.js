@@ -100,7 +100,7 @@ export class TimelineView {
             formatDayHeading(key),
             key === todayKey ? el("span.today-pill", {}, "Today") : null
           ),
-          dayMemories.map((memory) =>
+          ...dayMemories.map((memory) =>
             el("div.spine-item", { dataset: { type: memory.type } }, memoryCard(memory))
           )
         )

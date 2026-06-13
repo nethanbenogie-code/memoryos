@@ -122,17 +122,18 @@ export class SearchView {
       return;
     }
 
+    const cards = results.map((memory) =>
+      memoryCard(memory, {
+        onTagClick: (tag) => {
+          this.tagFilter = tag;
+          this.renderFilters();
+          this.renderResults();
+        },
+      })
+    );
     this.resultsHost.replaceChildren(
       el("p.result-count", {}, `${results.length} ${results.length === 1 ? "memory" : "memories"}`),
-      results.map((memory) =>
-        memoryCard(memory, {
-          onTagClick: (tag) => {
-            this.tagFilter = tag;
-            this.renderFilters();
-            this.renderResults();
-          },
-        })
-      )
+      ...cards
     );
   }
 }

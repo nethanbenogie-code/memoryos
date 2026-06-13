@@ -29,9 +29,15 @@ export function el(spec, attrs = {}, ...children) {
       node.setAttribute(key, value);
     }
   }
-  for (const child of children.flat()) {
-    if (child == null) continue;
-    node.append(child instanceof Node ? child : document.createTextNode(child));
+  for (const child of children.flat(Infinity)) {
+    if (child == null || child === false || child === "") continue;
+    if (child instanceof Node) {
+      node.append(child);
+    } else if (Array.isArray(child)) {
+      node.append(...child);
+    } else {
+      node.append(document.createTextNode(String(child)));
+    }
   }
   return node;
 }
