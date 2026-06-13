@@ -105,15 +105,15 @@ export class TasksView {
     return el(
       "div.task-board",
       {},
-      COLUMNS.map(({ status, label }) => {
+      ...COLUMNS.map(({ status, label }) => {
         const column = tasks.filter((t) => t.status === status);
         return el(
           "section.task-column",
           { dataset: { status } },
           el("h3.column-heading", {}, label, el("span.column-count", {}, String(column.length))),
-          column.length
+          ...(column.length
             ? column.map((task) => memoryCard(task, { showTime: false }))
-            : [el("p.column-empty", {}, "Nothing here.")]
+            : [el("p.column-empty", {}, "Nothing here.")])
         );
       })
     );

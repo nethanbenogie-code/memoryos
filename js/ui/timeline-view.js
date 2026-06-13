@@ -74,7 +74,7 @@ export class TimelineView {
       "div.filter-row",
       { role: "toolbar", "aria-label": "Filter by type" },
       chip("All", null),
-      FILTER_TYPES.map((t) => chip(typeLabel(t) + "s", t))
+      ...FILTER_TYPES.map((t) => chip(typeLabel(t) + "s", t))
     );
   }
 

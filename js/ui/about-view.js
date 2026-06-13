@@ -72,6 +72,6 @@ function section(heading, paragraphs) {
     "section.journal-section",
     {},
     el("h3.section-heading", {}, heading),
-    paragraphs.map((text) => el("p.about-text", {}, text))
+    ...paragraphs.map((text) => el("p.about-text", {}, text))
   );
 }

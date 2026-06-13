@@ -29,7 +29,7 @@ export function initCapture() {
   const typeRow = el(
     "div.capture-types",
     { role: "radiogroup", "aria-label": "Memory type" },
-    CAPTURE_TYPES.map((type) =>
+    ...CAPTURE_TYPES.map((type) =>
       el(
         "button.chip.chip-select",
         {

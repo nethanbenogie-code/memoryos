@@ -128,7 +128,7 @@ export function memoryCard(memory, opts = {}) {
     : null;
 
   const tags = memory.tags.length
-    ? el("div.card-tags", {}, memory.tags.map((t) => tagChip(t, opts.onTagClick)))
+    ? el("div.card-tags", {}, ...memory.tags.map((t) => tagChip(t, opts.onTagClick)))
     : null;
 
   const actions = el("div.card-actions", {});

@@ -86,12 +86,12 @@ export class JournalView {
       "section.journal-section",
       {},
       el("h3.section-heading", {}, "Captured this day"),
-      captured.length
+      ...(captured.length
         ? captured.map((memory) => memoryCard(memory))
-        : emptyState(
+        : [emptyState(
             isToday ? "Nothing captured yet today." : "Nothing was captured this day.",
             isToday ? "Press Ctrl+K (⌘K) to save your first memory of the day." : null
-          )
+          )])
     );
 
     const completedSection = completedTasks.length
@@ -99,7 +99,7 @@ export class JournalView {
           "section.journal-section",
           {},
           el("h3.section-heading", {}, "Completed this day"),
-          completedTasks.map((task) => memoryCard(task, { showTime: false }))
+          ...completedTasks.map((task) => memoryCard(task, { showTime: false }))
         )
       : null;
 
@@ -107,7 +107,7 @@ export class JournalView {
       heading,
       el("section.journal-section", {}, reflection, saveState),
       capturedSection,
-      completedSection ?? ""
+      ...(completedSection ? [completedSection] : [])
     );
   }
 
