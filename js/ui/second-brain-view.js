@@ -240,10 +240,21 @@ export class SecondBrainView {
         : null,
     );
 
-    const title = el("h3.sb-entry-title", {}, memory.title);
+    // For journal entries with only the auto-generated title,
+    // display the date part more elegantly
+    const isAutoTitle = memory.type === "journal" && /^Journal — \d{4}-\d{2}-\d{2}$/.test(memory.title);
+    const displayTitle = isAutoTitle
+      ? formatDayHeadingShort(memory.occurredAt)
+      : memory.title;
+    const title = el("h3.sb-entry-title", {}, displayTitle);
 
-    const body = memory.content
-      ? el("p.sb-entry-body", {}, truncate(memory.content, 200))
+    // For journal pages, prefer showing content over empty state
+    const isJournal = memory.type === "journal";
+    const displayBody = memory.content?.trim()
+      ? truncate(memory.content, 200)
+      : (isJournal ? "No reflection written for this day yet." : null);
+    const body = displayBody
+      ? el(`p.sb-entry-body${!memory.content?.trim() ? ".sb-entry-empty" : ""}`, {}, displayBody)
       : null;
 
     // Memory Card extras
@@ -357,6 +368,12 @@ function mediaIcon(type) {
     local_folder: "💾", external_drive: "🔌", url: "🔗", other: "📦",
   };
   return icons[type] ?? "📦";
+}
+
+function formatDayHeadingShort(iso) {
+  return new Date(iso).toLocaleDateString(undefined, {
+    weekday: "long", month: "long", day: "numeric",
+  });
 }
 
 function truncate(text, max) {

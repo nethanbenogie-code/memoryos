@@ -10,6 +10,7 @@
 import { bus } from "../core/events.js";
 import * as journal from "../services/journal-service.js";
 import { el, emptyState, formatDayHeading, memoryCard } from "./components.js";
+import { openCapture } from "./capture.js";
 
 const SAVE_DELAY_MS = 600;
 
@@ -47,6 +48,14 @@ export class JournalView {
     const { key, page, captured, completedTasks } = await journal.getDayBundle(this.key);
     const isToday = key === journal.dayKey();
 
+    const goToday = !isToday
+      ? el("button.btn.btn-quiet", {
+          type: "button",
+          title: "Go to today",
+          onclick: () => { this.key = journal.dayKey(); this.render(); }
+        }, "Today")
+      : null;
+
     const heading = el(
       "header.view-head.journal-head",
       {},
@@ -60,13 +69,32 @@ export class JournalView {
           formatDayHeading(key),
           isToday ? el("span.today-pill", {}, "Today") : null
         ),
-        this._navButton("›", +1, "Next day", isToday)
+        this._navButton("›", +1, "Next day", isToday),
+        goToday
+      ),
+      el(
+        "div.journal-actions",
+        {},
+        el("button.btn.btn-primary", {
+          type: "button",
+          onclick: () => {
+            // Pre-select Journal type then open capture
+            openCapture("journal");
+          }
+        }, "+ New journal entry"),
+        el("button.btn.btn-quiet", {
+          type: "button",
+          onclick: () => {
+            // Open quick capture with no pre-selection for any type
+            openCapture();
+          }
+        }, "+ Quick capture")
       )
     );
 
     const reflection = el("textarea.journal-text", {
       placeholder: isToday
-        ? "How did today go? Write freely — it saves as you type."
+        ? "How did today go? Write freely — it saves as you type.\n\nTip: the first line becomes the title shown in your Second Brain timeline."
         : "Notes for this day…",
       "aria-label": "Journal reflection",
       rows: "6",

@@ -93,13 +93,23 @@ function renderForm(prefill = {}) {
 
   // --- cognitive link builder ---
   const mediaHost = el("div.mc-media-list");
-  renderMediaList(mediaHost, mediaRefs, (updated) => { mediaRefs = updated; });
+
+  // Use a single refreshMedia function so every operation
+  // (add, remove) goes through the same path and mediaRefs
+  // stays in sync with what's rendered.
+  function refreshMedia() {
+    renderMediaList(mediaHost, mediaRefs, (updated) => {
+      mediaRefs = updated;
+      refreshMedia();
+    });
+  }
+  refreshMedia();
 
   const addMediaBtn = el(
     "button.btn.btn-quiet.mc-add-media",
     { type: "button", onclick: () => openMediaRefEditor(null, (ref) => {
       mediaRefs = [...mediaRefs, ref];
-      renderMediaList(mediaHost, mediaRefs, (updated) => { mediaRefs = updated; });
+      refreshMedia();
     })},
     "+ Add where the photos are stored"
   );
@@ -197,15 +207,27 @@ function openMediaRefEditor(existing, onSave) {
     exampleHint.textContent = cognitiveHint(e.target.value);
   });
 
+  // Store direct references to the actual inputs so we never
+  // accidentally query through the wrapper div and get undefined.
+  const labelEl = labelInput.querySelector("input");
+  const typeEl = typeSelect.querySelector("select");
+
   const saveBtn = el("button.btn.btn-primary", { type: "button" }, existing ? "Update" : "Add");
-  saveBtn.addEventListener("click", () => {
-    const label = labelInput.querySelector("input").value.trim();
-    if (!label) return;
-    onSave(createMediaRef({
-      label,
-      type: typeSelect.querySelector("select").value,
-    }));
+  const doSave = () => {
+    const label = labelEl.value.trim();
+    if (!label) {
+      labelEl.style.borderColor = "var(--c-task)";
+      labelEl.focus();
+      return;
+    }
+    labelEl.style.borderColor = "";
+    onSave(createMediaRef({ label, type: typeEl.value }));
     overlay.remove();
+  };
+  saveBtn.addEventListener("click", doSave);
+  // Also allow Enter key inside the label input to confirm
+  labelEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); doSave(); }
   });
 
   overlay.replaceChildren(
@@ -221,7 +243,7 @@ function openMediaRefEditor(existing, onSave) {
       )
     )
   );
-  overlay.querySelector("input")?.focus();
+  labelInput.querySelector("input")?.focus();
 }
 
 function cognitiveHint(type) {

@@ -69,7 +69,9 @@ export async function getDayBundle(key = dayKey()) {
   const { startIso, endIso } = dayBounds(key);
 
   const captured = (await repo.listMemoriesInRange(startIso, endIso)).filter(
-    (m) => m.type !== MemoryType.JOURNAL
+    // Exclude the auto-created daily page itself, but INCLUDE any
+    // additional journal entries the user captured during the day.
+    (m) => !(m.type === MemoryType.JOURNAL && m.id === page.id)
   );
 
   const tasks = await repo.listMemoriesByType(MemoryType.TASK);
@@ -91,6 +93,13 @@ export async function getDayBundle(key = dayKey()) {
 export async function saveJournalContent(key, content) {
   const page = await getOrCreateDailyPage(key);
   page.content = content;
+  // Derive a meaningful title from the first non-empty line of content,
+  // so the Second Brain timeline shows what was actually written instead
+  // of just "Journal — 2026-06-13". Fall back to the date if blank.
+  const firstLine = content.split("\n").map(l => l.trim()).find(l => l);
+  page.title = firstLine
+    ? (firstLine.length > 72 ? firstLine.slice(0, 71) + "…" : firstLine)
+    : `Journal — ${key}`;
   await repo.updateMemory(page);
   bus.emit("memory:updated", { memory: page });
   return page;

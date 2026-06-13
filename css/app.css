@@ -1045,3 +1045,11 @@ button.chip:hover { border-color: var(--ink-soft); }
   .mc-fab-btn { font-size: 13px; padding: 8px 12px; }
   .sb-month-heading { font-size: 17px; }
 }
+
+/* ----------------------- journal actions ----------------------- */
+.journal-head { flex-direction: column; align-items: stretch; gap: 10px; }
+.journal-nav { display: flex; align-items: center; gap: 10px; }
+.journal-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---- journal-specific Second Brain fixes ---- */
+.sb-entry-empty { font-style: italic; opacity: 0.6; }

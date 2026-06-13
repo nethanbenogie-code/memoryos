@@ -16,6 +16,7 @@ const CAPTURE_TYPES = [
   MemoryType.IDEA,
   MemoryType.TASK,
   MemoryType.EVENT,
+  MemoryType.JOURNAL,
   MemoryType.LEARNING,
   MemoryType.ARTICLE,
 ];
@@ -48,6 +49,7 @@ export function initCapture() {
 
   const textarea = el("textarea.capture-text", {
     placeholder: "What do you want to remember?  First line is the title — #tags welcome.",
+    "aria-multiline": "true",
     rows: "4",
     "aria-label": "Memory text",
   });
@@ -98,15 +100,58 @@ export function initCapture() {
     for (const chip of typeRow.children) {
       chip.setAttribute("aria-checked", String(chip === button));
     }
+    // Give context-aware placeholder hints
+    if (type === "journal") {
+      textarea.placeholder = "Write your journal entry. First line is the title, or leave blank for today's date.";
+    } else if (type === "task") {
+      textarea.placeholder = "What needs to be done? First line is the title — #tags welcome.";
+    } else if (type === "learning") {
+      textarea.placeholder = "What did you learn? Book title, course, skill — first line is the title.";
+    } else if (type === "article") {
+      textarea.placeholder = "Article title or paste the URL. First line is the title — #tags welcome.";
+    } else {
+      textarea.placeholder = "What do you want to remember?  First line is the title — #tags welcome.";
+    }
     textarea.focus();
   }
 }
 
-/** Open the capture dialog with the textarea focused. */
-export function openCapture() {
+/**
+ * Open the capture dialog with the textarea focused.
+ * @param {string} [preselect] Optional MemoryType to pre-select.
+ */
+export function openCapture(preselect) {
   if (!dialog) return;
-  dialog.showModal();
-  dialog.querySelector("textarea").focus();
+  if (preselect) {
+    const chip = dialog.querySelector(`[data-type="${preselect}"]`);
+    if (chip) {
+      // Manually replicate selectType without using .click() to avoid
+      // any side-effects when the dialog isn't open yet.
+      for (const c of dialog.querySelectorAll(".chip-select")) {
+        c.setAttribute("aria-checked", "false");
+      }
+      chip.setAttribute("aria-checked", "true");
+      // Update selectedType and placeholder directly
+      selectedType = preselect;
+      const textarea = dialog.querySelector("textarea");
+      if (textarea) {
+        if (preselect === "journal") {
+          textarea.placeholder = "Write your journal entry. First line is the title, or leave blank for today's date.";
+        } else if (preselect === "task") {
+          textarea.placeholder = "What needs to be done? First line is the title — #tags welcome.";
+        } else if (preselect === "learning") {
+          textarea.placeholder = "What did you learn? Book title, course, skill — first line is the title.";
+        } else if (preselect === "article") {
+          textarea.placeholder = "Article title or paste the URL. First line is the title — #tags welcome.";
+        } else {
+          textarea.placeholder = "What do you want to remember?  First line is the title — #tags welcome.";
+        }
+      }
+    }
+  }
+  // Guard: showModal() throws if the dialog is already open
+  if (!dialog.open) dialog.showModal();
+  dialog.querySelector("textarea")?.focus();
 }
 
 /** Global shortcut: Ctrl/Cmd+K from anywhere in the app. */
