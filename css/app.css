@@ -349,6 +349,8 @@ button.chip:hover { border-color: var(--ink-soft); }
   padding: 12px;
   resize: vertical;
   min-height: 96px;
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--accent);
 }
 .capture-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .capture-hint { margin: 0; font-size: 12px; color: var(--ink-soft); }
@@ -361,9 +363,21 @@ button.chip:hover { border-color: var(--ink-soft); }
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--ink);
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--accent);
   font: inherit;
   font-size: 16px;
   padding: 12px 14px;
+}
+.search-input::placeholder {
+  color: var(--ink-soft);
+  -webkit-text-fill-color: var(--ink-soft);
+  opacity: 1;
+}
+.search-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
 }
 .search-filters { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
 .result-count { color: var(--ink-soft); font-size: 13px; margin: 0 0 10px; }
@@ -407,6 +421,8 @@ button.chip:hover { border-color: var(--ink-soft); }
   line-height: 1.7;
   padding: 14px;
   resize: vertical;
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--accent);
 }
 .journal-save { min-height: 1.2em; margin: 4px 0 0; font-size: 12px; color: var(--ink-soft); }
 
@@ -554,6 +570,8 @@ button.chip:hover { border-color: var(--ink-soft); }
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--ink);
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--accent);
   font: inherit;
   font-size: 13px;
   padding: 5px 8px;
@@ -743,6 +761,8 @@ button.chip:hover { border-color: var(--ink-soft); }
   font-size: 16px;
   padding: 11px 12px;
   text-align: center;
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--accent);
 }
 .lock-btn { padding: 11px; }
 .lock-error { margin: 0; min-height: 1.2em; color: #c0382b; font-size: 13px; }
