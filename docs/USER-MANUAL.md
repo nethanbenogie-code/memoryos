@@ -12,6 +12,10 @@ This manual covers everything you need. It takes about fifteen minutes to read i
 
 MemoryOS runs in your web browser. Open the app's web address on any phone, tablet, or computer — Chrome, Edge, Safari, and Firefox all work.
 
+### The first time you open it
+
+On a brand-new install, MemoryOS greets you once with a short **Cognitive Linking** welcome — three calm steps explaining the single idea the whole app is built around: keep your photos and files wherever they already live, and store only the *meaning* and a pointer to them here. The link itself is invisible — it lives in your mind; MemoryOS just keeps the thread. You can start right away or dismiss it with **I'll start later**; it appears only that once. You can reopen it any time from the **How Cognitive Linking works** link on the Second Brain screen. See sections 3 and 4 for the full workflow.
+
 ### Installing it as an app (recommended)
 
 Installing puts MemoryOS on your home screen or desktop, makes it open full-screen like a native app, and tells the browser that your data is important and should not be cleared automatically.
@@ -26,7 +30,7 @@ After installing, MemoryOS works even with no internet connection. Your memories
 
 ### The main screen
 
-On a computer you'll see a sidebar on the left with six views — **Second Brain**, **Timeline**, **Search**, **Tasks**, **Journal**, and **Backup** — plus a **+ Capture** button, a share button, and links to **About MemoryOS** and this **User manual** (readable inside the app, even offline). On a phone, the same six views sit in a bar at the bottom of the screen, a round **+** button floats above it for quick capture, and the app lock, About, and the manual are inside the **Backup** tab.
+On a computer you'll see a sidebar on the left with seven views — **Second Brain**, **Timeline**, **Search**, **Tasks**, **Journal**, **Backup**, and **AI Assistant** — plus a **+ Capture** button, a share button, and links to **About MemoryOS** and this **User manual** (readable inside the app, even offline). On a phone, the same seven views sit in a bar at the bottom of the screen, a round **+** button floats above it for quick capture, and the app lock, About, and the manual are inside the **Backup** tab.
 
 ---
 
@@ -109,15 +113,23 @@ Inside the Memory Card form, under "Where are the photos?", press **+ Add where 
 
 You can add more than one link to a single Memory Card — for example, if photos are spread across a Facebook album and a local backup drive.
 
-### The Family Archive habit
+### Archives: family, and everything else
 
-When you experience an important family event, do two things: upload your best photos to a private album called **MemoryOS - Family Archive** (in Facebook, Google Photos, or wherever you prefer), then create a Memory Card in MemoryOS with a Cognitive Link pointing there.
+The Family Archive is the easiest place to start, but the same habit fits anything you want to be able to return to. Keep a clearly-named archive per theme, wherever you already store media, following the pattern **MemoryOS - \<Topic\> Archive**:
 
-MemoryOS becomes the *map*. The photo platform becomes the *storage*. You control both, and neither owns your memories.
+- **MemoryOS - Family Archive** — reunions, birthdays, ordinary days worth keeping
+- **MemoryOS - Travel Archive** — trips, places, the views you don't want to forget
+- **MemoryOS - Learning Archive** — courses, books, notes, things you figured out
+- **MemoryOS - Work Archive** — projects shipped, milestones, proof of what you built
+- **MemoryOS - Friends Archive** — the people and the moments with them
+
+When something matters, add a few items to the right archive, then create a Memory Card here with a Cognitive Link pointing to it. MemoryOS becomes the *map*; the archive stays the *storage*. You control both, and neither owns your memories.
+
+Need a refresher? Open the **How Cognitive Linking works** link in the top-right of the Second Brain screen (it's also offered in the empty timeline before you've made your first card). It shows the same three-step welcome you saw on first launch, with tap-to-copy buttons for each example archive name.
 
 ### Why this matters
 
-Most people's important photos are scattered across five apps, three old phones, and two hard drives, with no context attached to any of them. A Memory Card fixes that: the meaning, the people, the reflection, and the location of the photos — all in one place, searchable, private, and yours.
+Most people's important photos are scattered across five apps, three old phones, and two hard drives, with no context attached to any of them. A Memory Card fixes that: the meaning, the people, the reflection, and the location of the media — all in one place, searchable, private, and yours. The link is invisible and effortless to follow, which is the point: your own life stays easier to reach than the feed.
 
 ---
 
@@ -166,9 +178,41 @@ Tips for finding things fast:
 - Your most-used **#tags** appear as chips with counts — tap one to filter, tap again to clear.
 - Search works in any language you write in, including Filipino.
 
+For *questions* rather than keywords — "what did I do last summer?", "what have I been worried about?" — ask the **AI Assistant** (section 8), which searches your memories by meaning and answers in plain language.
+
 ---
 
-## 8. Tasks
+## 8. The AI Assistant
+
+MemoryOS includes an AI assistant that reasons over *your own life* — your memories, journal, tasks, and Memory Cards — instead of answering from generic knowledge. Ask it "What did I accomplish this month?", "What patterns show up in my journal?", or "When did I last spend real time with Mom?" and it answers from what you have actually saved. Open it from the **AI Assistant** view; the first time, you choose how it runs.
+
+### Two ways to run it
+
+**Offline, inside your browser — no key needed.** Press **Run fully offline instead** and MemoryOS downloads a small AI model that runs entirely on your device. Nothing leaves your browser — not your question, not your memories. The first time, it downloads the model (about 900 MB) and stores it; after that it works with no internet at all. This mode needs Chrome or Edge (it uses your device's graphics through WebGPU) and a reasonably capable computer or phone. It is private and free — and a little less sharp than the cloud option below.
+
+**Cloud, using an Anthropic API key.** Enter a key from console.anthropic.com and the assistant uses Claude, the most capable option, with noticeably better reasoning over your memories. Your key is stored only on this device. When you ask a question, only the memories relevant to that question are sent to Anthropic to answer it — never to anyone else. Get a key only if you want the extra quality; the offline mode needs nothing.
+
+You can switch anytime. In offline mode the header shows **AI settings**; with a key it shows **Disconnect**. Either one returns you to the choice screen.
+
+### How it finds the right memories
+
+The assistant does not just skim your most recent entries. When you ask a question, MemoryOS searches your memories *by meaning* and hands the assistant the ones most relevant to what you asked — even when your words do not match the words in the entry. Ask about "feeling burned out" and it can surface a journal entry that described exhaustion without ever using that phrase. This meaning-based matching is computed entirely on your device, in both offline and cloud modes.
+
+### Asking by date or period
+
+You can ask about a specific time, and the assistant fetches exactly what is stored in that window — no matter how far back it is. It understands everyday phrasing: "what happened **last June**?", "show my **journal yesterday**", "my **notes from last week**", "what did I **learn in May**?", "what did I do **in 2024**?", or a precise date like "**June 12, 2025**". You can combine a kind with a period — "tasks this month", "Memory Cards from 2025" — and it will narrow to just that kind. The assistant tells you the exact date range it used, so if it guessed the wrong window (for example, which "June" you meant) you can correct it in a word. If nothing is saved for that period, it says so plainly rather than inventing anything.
+
+### Suggested questions
+
+When the assistant is empty it offers a few starting questions drawn from your actual data — overdue tasks, recent journal themes, things you have been learning. Tap one, or type your own.
+
+### What it will and will not do
+
+It answers from your saved memories and is honest when something is not there — it will not invent memories or tasks, and it is not a general-purpose chatbot. Think of it as a reasoning partner for your own life, kept deliberately focused on it.
+
+---
+
+## 9. Tasks
 
 The **Tasks** view gathers every task into three columns: **Pending**, **In progress**, and **Completed**.
 
@@ -176,11 +220,11 @@ Every task card has a status button. Click it to move the task forward: Pending 
 
 Two ways a task is born: capture it with the **Task** chip in quick capture, or press **Make a task** on any existing note or idea. Anything you've written can become something you act on.
 
-Completed tasks earn points (section 10) and appear in that day's Journal under "Completed this day." They also appear in the Second Brain timeline as **Achievements** — finishing things is part of your life story.
+Completed tasks earn points (section 11) and appear in that day's Journal under "Completed this day." They also appear in the Second Brain timeline as **Achievements** — finishing things is part of your life story.
 
 ---
 
-## 9. Reminders
+## 10. Reminders
 
 Any task can ring a bell at the right moment.
 
@@ -192,7 +236,7 @@ Any task can ring a bell at the right moment.
 
 ---
 
-## 10. Points, streaks, and levels
+## 11. Points, streaks, and levels
 
 Finishing things should feel good — so MemoryOS makes sure it does.
 
@@ -206,7 +250,7 @@ Finishing things should feel good — so MemoryOS makes sure it does.
 
 ---
 
-## 11. The Daily Journal
+## 12. The Daily Journal
 
 Open **Journal** and today's page is simply there — MemoryOS creates it automatically on first visit each day. A journal page has three parts:
 
@@ -220,7 +264,7 @@ Use the **‹** and **›** arrows to walk through past days. Journal entries al
 
 ---
 
-## 12. Backing up your memories
+## 13. Backing up your memories
 
 **There's a Backup tab. Tap the big button once a week.** That's all most people need to know.
 
@@ -236,7 +280,7 @@ Use the **‹** and **›** arrows to walk through past days. Journal entries al
 
 ---
 
-## 13. Locking the app (optional, recommended)
+## 14. Locking the app (optional, recommended)
 
 **Turning it on.** Open the **Backup** tab, find **App lock**, press **Set up app lock**, choose a password (at least 4 characters), and optionally add a hint. You'll then be shown a **recovery code** like `ABCD-EFGH-JKMN`.
 
@@ -250,35 +294,37 @@ Use the **‹** and **›** arrows to walk through past days. Journal entries al
 
 ---
 
-## 14. Your data and your privacy
+## 15. Your data and your privacy
 
 **Where your memories live.** Everything is stored inside your browser's private storage on this device. Nothing is uploaded. No account, no analytics, no cloud. If you open MemoryOS on your phone and your laptop, each device has its own separate set of memories.
 
 **Cognitive Links are just text.** When you record where your photos are stored, MemoryOS stores only the text you typed — a description like "Facebook → Family Archive." It never accesses Facebook, Google Photos, or any other service. No API keys, no permissions, no tracking.
 
+**The AI Assistant is opt-in.** It is off until you set it up. In offline mode it changes nothing here — the model runs inside your browser and your memories never leave the device. Only if you choose to connect an Anthropic API key are the memories relevant to a question sent — to Anthropic alone — to answer it. The choice, and the trade-off, are always yours.
+
 **What Delete really does.** Deleting a memory hides it everywhere but archives it rather than destroying it. A memory system should never forget by accident.
 
-**One real warning.** Clearing your browser's data for this site will erase your memories. Be careful with browser "cleaner" apps. Three habits protect you: install MemoryOS as an app (section 1), use the Backup tab (section 12), and avoid "clear all browsing data" sweeps that include site data.
+**One real warning.** Clearing your browser's data for this site will erase your memories. Be careful with browser "cleaner" apps. Three habits protect you: install MemoryOS as an app (section 1), use the Backup tab (section 13), and avoid "clear all browsing data" sweeps that include site data.
 
 **Private/incognito windows** don't keep site data — memories saved there vanish when the window closes. Always use a normal window.
 
 ---
 
-## 15. Working offline
+## 16. Working offline
 
-Once you've opened MemoryOS one time, it works with no internet at all — on a bus, on a ferry, during a brownout. Second Brain, capture, search, tasks, journal, Memory Cards: everything works identically offline.
+Once you've opened MemoryOS one time, it works with no internet at all — on a bus, on a ferry, during a brownout. Second Brain, capture, search, tasks, journal, Memory Cards: everything works identically offline. If you have chosen the offline **AI Assistant** (section 8), it works without internet too, once its model has finished downloading the first time.
 
 When an update is published, you'll receive it automatically the next time you open MemoryOS while online.
 
 ---
 
-## 16. Keyboard shortcuts
+## 17. Keyboard shortcuts
 
 **Ctrl+K** (**⌘K** on Mac) opens Quick Capture from anywhere in the app. Inside the capture box: **Enter** saves, **Shift+Enter** adds a new line, **Esc** closes without saving.
 
 ---
 
-## 17. Troubleshooting
+## 18. Troubleshooting
 
 **The app shows a blank page or won't start.** Reload once. If it persists, make sure JavaScript is enabled and your browser is reasonably up to date.
 
@@ -292,6 +338,8 @@ When an update is published, you'll receive it automatically the next time you o
 
 **Reminders don't show system notifications.** Check that you allowed notifications for MemoryOS in your browser's site settings, and that your device isn't in Do Not Disturb mode. MemoryOS must be open (even in a background tab) for a reminder to ring at its exact time.
 
+**The AI Assistant won't load the offline model.** The offline model needs a browser with WebGPU — an up-to-date Chrome or Edge — and downloads about 900 MB the first time, so that first load needs internet and a little patience. On an unsupported browser, open **AI settings** and connect an Anthropic API key instead.
+
 **I forgot my password and my recovery code.** There is deliberately no bypass — that's what makes it a real lock. If you have a backup file, install MemoryOS fresh on another device or browser, restore the backup there, and leave the lock off.
 
 **Restore says "already up to date".** Good news — everything in that backup is already on this device. Nothing was lost.
@@ -300,7 +348,7 @@ When an update is published, you'll receive it automatically the next time you o
 
 ---
 
-## 18. Sharing MemoryOS with friends
+## 19. Sharing MemoryOS with friends
 
 If MemoryOS helps you, the kindest thing you can do is pass it on. Sharing the app never shares your memories — a friend who opens your link starts with a completely empty MemoryOS of their own.
 
@@ -310,7 +358,7 @@ MemoryOS is free and open source. No account, no ads, nothing to sign up for —
 
 ---
 
-## 19. A way to use MemoryOS well
+## 20. A way to use MemoryOS well
 
 Tools don't build habits; routines do. Here is one that works:
 

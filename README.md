@@ -6,7 +6,7 @@ A **local-first personal memory operating system** — a digital extension of hu
 
 Works on desktop and mobile as an installable Progressive Web App (PWA) — add it to your home screen and it runs offline.
 
-**New here?** Read the [User Manual](docs/USER-MANUAL.md) — installing on your phone, capturing, search, tasks, the journal, and how your data is protected.
+**New here?** Read the [User Manual](docs/USER-MANUAL.md) — installing on your phone, capturing, search, the AI assistant, tasks, the journal, and how your data is protected. See the [changelog](CHANGELOG.md) for what's new.
 
 ## Run it locally
 
@@ -51,8 +51,9 @@ js/
   data/models.js       Memory Object model, types, links
   data/db.js           IndexedDB + versioned migrations
   data/repository.js   the only module that touches the database
-  services/            capture, tasks, search index, daily journal
+  services/            capture, tasks, lexical + semantic search, daily journal
   ui/                  timeline (the spine), search, tasks, journal, quick capture
+  ai/                  assistant: personal-context engine, cloud + offline providers
 ```
 
 Design notes: serif type is reserved exclusively for *time* (day headings, the journal); no webfonts, because an offline-first app must not depend on a font CDN; full dark mode via `prefers-color-scheme`.
@@ -60,7 +61,7 @@ Design notes: serif type is reserved exclusively for *time* (day headings, the j
 ## Roadmap
 
 - **v0.2** — task reminders with system notifications, a humane rewards system (points, levels, streaks), and one-tap / shared / automatic backups with merge-safe restore — **shipped**. Next: edit-in-place, calendar view, weekly planning.
-- **v0.3** — AI assistant over your own knowledge base (natural-language search, daily summaries); the `embeddings` store is already in the schema waiting for this.
+- **v0.3** — AI assistant over your own knowledge base: meaning-based (semantic) retrieval of your memories, a reasoning chat grounded in your own data, and a fully **offline** in-browser model option (WebLLM) alongside the cloud one — **shipped**. The `embeddings` store reserved since v0.1 now backs on-device semantic search.
 - **v0.4** — the memory graph: relationship visualization over the `links` store that has been accumulating since v0.1.
 - **v0.5** — optional multi-device sync (last-write-wins on `modifiedAt`, tombstone propagation).
 - **v1.0** — persistent companion: context-aware reminders, pattern recognition, intelligent planning.

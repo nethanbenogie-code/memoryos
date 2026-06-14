@@ -189,3 +189,50 @@ export async function bulkUpsert(memories, links) {
   for (const link of links) linkStore.put(link);
   await txDone(tx);
 }
+
+/* ------------------------------ embeddings ----------------------------- *
+ * The embeddings store (keyPath ["memoryId","model"]) was reserved in the
+ * v1 schema for semantic search. These accessors are its only gateway.
+ * Keyed per model so re-embedding with a better model later is additive.
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Store (or replace) a memory's embedding for a given model.
+ * @param {{memoryId:string, model:string, vector:number[], dim:number, indexedAt?:string}} record
+ */
+export async function putEmbedding(record) {
+  const db = await openDatabase();
+  const tx = db.transaction("embeddings", "readwrite");
+  tx.objectStore("embeddings").put({
+    indexedAt: new Date().toISOString(),
+    ...record,
+  });
+  await txDone(tx);
+  return record;
+}
+
+/**
+ * All embeddings for one model, as an array of records.
+ * @param {string} model
+ */
+export async function listEmbeddings(model) {
+  const db = await openDatabase();
+  const tx = db.transaction("embeddings", "readonly");
+  const all = await promisify(tx.objectStore("embeddings").getAll());
+  return all.filter((e) => e.model === model);
+}
+
+/**
+ * Remove every embedding (all models) for a memory — called on delete.
+ * @param {string} memoryId
+ */
+export async function deleteEmbeddingsFor(memoryId) {
+  const db = await openDatabase();
+  const tx = db.transaction("embeddings", "readwrite");
+  const store = tx.objectStore("embeddings");
+  const keys = await promisify(store.getAllKeys());
+  for (const key of keys) {
+    if (Array.isArray(key) && key[0] === memoryId) store.delete(key);
+  }
+  await txDone(tx);
+}

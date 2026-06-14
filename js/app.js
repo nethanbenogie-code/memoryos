@@ -10,6 +10,7 @@ import { bus } from "./core/events.js";
 import { openDatabase } from "./data/db.js";
 import * as memoryService from "./services/memory-service.js";
 import { searchIndex } from "./services/search-service.js";
+import * as semantic from "./services/semantic-service.js";
 import { initCapture, openCapture, bindCaptureShortcut } from "./ui/capture.js";
 import { el } from "./ui/components.js";
 import { TimelineView } from "./ui/timeline-view.js";
@@ -23,7 +24,9 @@ import { shareApp } from "./ui/share.js";
 import { AboutView } from "./ui/about-view.js";
 import { ManualView } from "./ui/manual-view.js";
 import { SecondBrainView } from "./ui/second-brain-view.js";
+import { AIView } from "./ai/ai-view.js";
 import { initMemoryCardCapture } from "./ui/memory-card-capture.js";
+import { maybeShowCognitiveLinkingOnboarding } from "./ui/cognitive-linking-onboarding.js";
 import { isLockEnabled, lockNow } from "./services/lock-service.js";
 import { showLockScreen } from "./ui/lock-screen.js";
 import { initCelebrations } from "./ui/celebration.js";
@@ -36,6 +39,7 @@ const VIEWS = [
   { id: "tasks", label: "Tasks", icon: "☑", View: TasksView },
   { id: "journal", label: "Journal", icon: "✎", View: JournalView },
   { id: "backup", label: "Backup", icon: "⛉", View: BackupView },
+  { id: "ai", label: "AI Assistant", icon: "◈", View: AIView },
   { id: "about", label: "About MemoryOS", icon: "◈", View: AboutView, hidden: true },
   { id: "manual", label: "User manual", icon: "✦", View: ManualView, hidden: true },
 ];
@@ -55,6 +59,11 @@ async function main() {
   await openDatabase();
   if (await isLockEnabled()) await showLockScreen();
   searchIndex.build(await memoryService.listAll());
+
+  // Build the semantic index in the background. Non-blocking: the model
+  // downloads once (~25MB) then caches; the app is fully usable meanwhile,
+  // and lexical search + AI keep working even if this never finishes.
+  semantic.indexAll().catch((e) => console.warn("[semantic] initial index:", e));
 
   const host = document.getElementById("view-host");
   const sideNav = document.getElementById("side-nav");
@@ -99,9 +108,15 @@ async function main() {
   await showView("brain", host);
   registerServiceWorker();
 
+  // First-run only: introduce Cognitive Linking (the Family Archive is its
+  // most relatable example). Non-blocking and self-gating — shows exactly
+  // once, and never for a user who was already using MemoryOS.
+  maybeShowCognitiveLinkingOnboarding();
+
   // After a restore, rebuild the search index and re-render the open view.
   bus.on("backup:restored", async () => {
     searchIndex.build(await memoryService.listAll());
+    semantic.indexAll().catch((e) => console.warn("[semantic] reindex after restore:", e));
     const id = currentId;
     currentId = null;
     showView(id, host);
