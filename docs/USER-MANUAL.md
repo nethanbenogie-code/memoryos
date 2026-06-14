@@ -340,6 +340,8 @@ When an update is published, you'll receive it automatically the next time you o
 
 **The AI Assistant won't load the offline model.** The offline model needs a browser with WebGPU — an up-to-date Chrome or Edge — and downloads about 900 MB the first time, so that first load needs internet and a little patience. On an unsupported browser, open **AI settings** and connect an Anthropic API key instead.
 
+**The offline assistant answered a few times, then started failing.** The small offline model runs on your device's GPU and can occasionally lose that connection — usually under low memory, sometimes after a very large question. MemoryOS now tries to restart the model automatically; if a message still fails, reload the page to bring it back, ask about a narrower date range, or switch to an API key in **AI settings**. (Also note: the offline model is small and sometimes describes itself loosely or gives a vaguer answer than the cloud option — that's expected, not a data problem.)
+
 **I forgot my password and my recovery code.** There is deliberately no bypass — that's what makes it a real lock. If you have a backup file, install MemoryOS fresh on another device or browser, restore the backup there, and leave the lock off.
 
 **Restore says "already up to date".** Good news — everything in that backup is already on this device. Nothing was lost.

@@ -74,17 +74,66 @@ export async function isReady() {
 
 let _webllmEngine = null;
 let _webllmModel = null;
+let _webllmLoading = null; // single in-flight init, so two sends can't race
+
+/**
+ * Builds the engine. Overridable in tests so the recovery logic can be
+ * exercised without WebGPU. In production it lazy-imports web-llm from the
+ * CDN (heavy; cached after first load) and creates the engine.
+ */
+let _createWebLLMEngine = async (onStatus) => {
+  const webllm = await import("https://esm.run/@mlc-ai/web-llm@0.2.83");
+  return webllm.CreateMLCEngine(WEBLLM_MODEL, {
+    initProgressCallback: (p) =>
+      onStatus?.(p.text || `Loading model ${Math.round((p.progress || 0) * 100)}%`),
+  });
+};
+
+/** @internal Test hook: swap the engine factory and drop any cached engine. */
+export function __setWebLLMEngineFactory(fn) {
+  _createWebLLMEngine = fn;
+  resetWebLLM();
+}
+
+/** Forget the cached engine so the next call rebuilds it (weights stay cached). */
+function resetWebLLM() {
+  _webllmEngine = null;
+  _webllmModel = null;
+}
+
+/** WebLLM errors that mean "this engine handle is dead — rebuild it". */
+function isWebLLMRecoverable(err) {
+  const m = (err && err.message ? err.message : String(err)).toLowerCase();
+  return (
+    m.includes("already been disposed") ||
+    m.includes("model not loaded") ||
+    m.includes("reload(model)") ||
+    m.includes("device is lost") ||
+    m.includes("device lost") ||
+    m.includes("destroyed")
+  );
+}
 
 async function ensureWebLLM(onStatus) {
   if (!navigator.gpu) throw new Error("NO_WEBGPU");
   if (_webllmEngine && _webllmModel === WEBLLM_MODEL) return _webllmEngine;
-  const webllm = await import("https://esm.run/@mlc-ai/web-llm@0.2.83");
-  _webllmEngine = await webllm.CreateMLCEngine(WEBLLM_MODEL, {
-    initProgressCallback: (p) =>
-      onStatus?.(p.text || `Loading model ${Math.round((p.progress || 0) * 100)}%`),
-  });
-  _webllmModel = WEBLLM_MODEL;
-  return _webllmEngine;
+  if (_webllmLoading) return _webllmLoading; // a load is already happening
+
+  _webllmLoading = (async () => {
+    const engine = await _createWebLLMEngine(onStatus);
+    _webllmEngine = engine;
+    _webllmModel = WEBLLM_MODEL;
+    return engine;
+  })();
+
+  try {
+    return await _webllmLoading;
+  } catch (err) {
+    resetWebLLM(); // don't cache a half-built engine
+    throw err;
+  } finally {
+    _webllmLoading = null;
+  }
 }
 
 /* ─────────────────────────── context builder ─────────────────────────── */
@@ -418,16 +467,52 @@ async function chatAnthropic(systemPrompt, messages) {
 }
 
 /** Offline path: a small model running fully in-browser via WebGPU.
- *  Same personal context, zero network, zero key. */
+ *  Same personal context, zero network, zero key.
+ *
+ *  Self-healing: if the engine was disposed or lost its GPU device (e.g.
+ *  memory pressure), we rebuild it once from cached weights and retry, so
+ *  one bad turn no longer wedges the assistant for the rest of the session. */
 async function chatWebLLM(systemPrompt, messages, onStatus) {
-  const engine = await ensureWebLLM(onStatus);
+  // The 1B offline model has a small effective context; keep the prompt
+  // within a safe budget so a large date-range block can't overflow it or
+  // exhaust GPU memory (which is what disposes the engine).
+  const safeSystem = clampForWebLLM(systemPrompt);
+
+  let engine = await ensureWebLLM(onStatus);
   onStatus?.("Thinking…");
+  try {
+    return await runWebLLM(engine, safeSystem, messages);
+  } catch (err) {
+    if (!isWebLLMRecoverable(err)) throw err;
+    resetWebLLM();
+    onStatus?.("Reloading model…");
+    try {
+      engine = await ensureWebLLM(onStatus);
+      onStatus?.("Thinking…");
+      return await runWebLLM(engine, safeSystem, messages);
+    } catch {
+      resetWebLLM();
+      throw new Error("WEBLLM_LOST");
+    }
+  }
+}
+
+async function runWebLLM(engine, systemPrompt, messages) {
   const reply = await engine.chat.completions.create({
     messages: [{ role: "system", content: systemPrompt }, ...messages],
     temperature: 0.4,
     max_tokens: MAX_TOKENS,
   });
   return reply.choices[0].message.content.trim();
+}
+
+const WEBLLM_SYSTEM_CHAR_BUDGET = 8000;
+function clampForWebLLM(systemPrompt) {
+  if (systemPrompt.length <= WEBLLM_SYSTEM_CHAR_BUDGET) return systemPrompt;
+  return (
+    systemPrompt.slice(0, WEBLLM_SYSTEM_CHAR_BUDGET) +
+    "\n\n[Context truncated to fit the offline model. Ask about a narrower date range for full detail.]"
+  );
 }
 
 /* ─────────────────────── suggested prompts ──────────────────────────── */
