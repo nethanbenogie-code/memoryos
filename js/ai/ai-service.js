@@ -24,13 +24,11 @@ import * as repo from "../data/repository.js";
 import { MemoryType, TaskStatus, typeLabel } from "../data/models.js";
 import { dayKey, dayBounds } from "../services/journal-service.js";
 import * as semantic from "../services/semantic-service.js";
-import { parsePeriod, parseTypeFilters, typeFilterLabel } from "../services/time-query-service.js";
 
 const ANTHROPIC_MODEL = "claude-sonnet-4-6";
 const WEBLLM_MODEL = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
 const MAX_TOKENS = 1024;
 const MAX_CONTEXT_MEMORIES = 40;
-const MAX_DATED_ITEMS = 60;
 const API_URL = "https://api.anthropic.com/v1/messages";
 
 /* ─────────────────────────── API key management ──────────────────────── */
@@ -74,66 +72,17 @@ export async function isReady() {
 
 let _webllmEngine = null;
 let _webllmModel = null;
-let _webllmLoading = null; // single in-flight init, so two sends can't race
-
-/**
- * Builds the engine. Overridable in tests so the recovery logic can be
- * exercised without WebGPU. In production it lazy-imports web-llm from the
- * CDN (heavy; cached after first load) and creates the engine.
- */
-let _createWebLLMEngine = async (onStatus) => {
-  const webllm = await import("https://esm.run/@mlc-ai/web-llm@0.2.83");
-  return webllm.CreateMLCEngine(WEBLLM_MODEL, {
-    initProgressCallback: (p) =>
-      onStatus?.(p.text || `Loading model ${Math.round((p.progress || 0) * 100)}%`),
-  });
-};
-
-/** @internal Test hook: swap the engine factory and drop any cached engine. */
-export function __setWebLLMEngineFactory(fn) {
-  _createWebLLMEngine = fn;
-  resetWebLLM();
-}
-
-/** Forget the cached engine so the next call rebuilds it (weights stay cached). */
-function resetWebLLM() {
-  _webllmEngine = null;
-  _webllmModel = null;
-}
-
-/** WebLLM errors that mean "this engine handle is dead — rebuild it". */
-function isWebLLMRecoverable(err) {
-  const m = (err && err.message ? err.message : String(err)).toLowerCase();
-  return (
-    m.includes("already been disposed") ||
-    m.includes("model not loaded") ||
-    m.includes("reload(model)") ||
-    m.includes("device is lost") ||
-    m.includes("device lost") ||
-    m.includes("destroyed")
-  );
-}
 
 async function ensureWebLLM(onStatus) {
   if (!navigator.gpu) throw new Error("NO_WEBGPU");
   if (_webllmEngine && _webllmModel === WEBLLM_MODEL) return _webllmEngine;
-  if (_webllmLoading) return _webllmLoading; // a load is already happening
-
-  _webllmLoading = (async () => {
-    const engine = await _createWebLLMEngine(onStatus);
-    _webllmEngine = engine;
-    _webllmModel = WEBLLM_MODEL;
-    return engine;
-  })();
-
-  try {
-    return await _webllmLoading;
-  } catch (err) {
-    resetWebLLM(); // don't cache a half-built engine
-    throw err;
-  } finally {
-    _webllmLoading = null;
-  }
+  const webllm = await import("https://esm.run/@mlc-ai/web-llm@0.2.83");
+  _webllmEngine = await webllm.CreateMLCEngine(WEBLLM_MODEL, {
+    initProgressCallback: (p) =>
+      onStatus?.(p.text || `Loading model ${Math.round((p.progress || 0) * 100)}%`),
+  });
+  _webllmModel = WEBLLM_MODEL;
+  return _webllmEngine;
 }
 
 /* ─────────────────────────── context builder ─────────────────────────── */
@@ -277,59 +226,6 @@ export async function buildContext() {
   return lines.join("\n");
 }
 
-/* ────────────────────── date-scoped retrieval ───────────────────────── */
-
-/**
- * If the user's message refers to a date or period ("last June", "my
- * notes from last week", "in 2024"), fetch EXACTLY the memories stored in
- * that range — not just recent ones — and render them as an authoritative
- * context block. This is what lets the assistant answer "what happened
- * last June?" accurately even for data far outside the recent window.
- *
- * Returns "" when no time expression is found, so normal questions are
- * unaffected. Works for both providers (pure parsing + a DB range read).
- * @param {string} userMessage
- * @returns {Promise<string>}
- */
-export async function buildDatedContext(userMessage) {
-  const period = parsePeriod(userMessage);
-  if (!period) return "";
-
-  const types = parseTypeFilters(userMessage);
-  let rows = await repo.listMemoriesInRange(period.startIso, period.endIso);
-  if (types) rows = rows.filter((m) => types.includes(m.type));
-  rows.sort((a, b) => (a.occurredAt || "").localeCompare(b.occurredAt || "")); // chronological
-
-  const kind = typeFilterLabel(types);
-  const header = `# ${capitalize(kind)} from ${period.label}`;
-
-  if (!rows.length) {
-    return [
-      header,
-      `The database contains no ${kind} dated within ${period.label}. Tell the user plainly that nothing is recorded for that period — do not invent entries.`,
-      "",
-    ].join("\n");
-  }
-
-  const lines = [
-    header,
-    `This is the COMPLETE, authoritative list of ${kind} stored in this date range (${rows.length} item${rows.length > 1 ? "s" : ""}). Answer date-scoped questions about "${period.label}" from this section, and state the range you used.`,
-    "",
-  ];
-  for (const m of rows.slice(0, MAX_DATED_ITEMS)) {
-    lines.push(`### ${fmtDate(m.occurredAt)} — ${m.title} [${typeLabel(m.type)}]`);
-    if (m.content?.trim()) lines.push(m.content.trim().slice(0, 600) + (m.content.length > 600 ? "…" : ""));
-    if (m.extra?.people?.length) lines.push(`People: ${m.extra.people.join(", ")}`);
-    if (m.extra?.location) lines.push(`Location: ${m.extra.location}`);
-    if (m.extra?.reflection) lines.push(`Reflection: "${m.extra.reflection}"`);
-    lines.push("");
-  }
-  if (rows.length > MAX_DATED_ITEMS) {
-    lines.push(`…and ${rows.length - MAX_DATED_ITEMS} more in this range (showing the earliest ${MAX_DATED_ITEMS}).`);
-  }
-  return lines.join("\n");
-}
-
 /* ────────────────────────── system prompt ───────────────────────────── */
 
 function buildSystemPrompt(context) {
@@ -347,11 +243,6 @@ Your capabilities:
 - Surface patterns: recurring themes, unfinished projects, people they mention often
 - Help reflect: "What mattered most this week?", "What did I learn?"
 - Suggest what to focus on next based on their tasks and journal
-
-Answering questions about a specific date or period:
-- When a section titled "… from <period>" is present, it is the COMPLETE and authoritative list of what is stored for that period. Base your answer on it.
-- Briefly state the date range you used (e.g. "For June 2025, you have…") so the user can correct you if they meant a different window.
-- If that section says nothing is recorded for the period, say so plainly. Never invent entries to fill a gap.
 
 What you must never do:
 - Invent memories or tasks that aren't in the context
@@ -391,15 +282,6 @@ export function getHistory() {
 export async function chat(userMessage, onStatus) {
   const provider = await getProvider();
 
-  // Date-scoped retrieval: if the question names a date or period, pull
-  // exactly what's stored in that range so older data is answerable too.
-  let dated = "";
-  try {
-    dated = await buildDatedContext(userMessage);
-  } catch (err) {
-    console.warn("[ai] dated retrieval skipped:", err);
-  }
-
   // Semantic retrieval: surface the memories most relevant to THIS question
   // and lead the context with them, so the model reasons over what matters
   // rather than only the most recent items. Best-effort.
@@ -412,9 +294,7 @@ export async function chat(userMessage, onStatus) {
   }
 
   const context = await buildContext();
-  const systemPrompt = buildSystemPrompt(
-    [dated, relevant, context].filter(Boolean).join("\n")
-  );
+  const systemPrompt = buildSystemPrompt(relevant ? relevant + "\n" + context : context);
 
   conversationHistory.push({ role: "user", content: userMessage });
   const messages = conversationHistory.slice(-20); // bound to last 20 turns
@@ -467,52 +347,16 @@ async function chatAnthropic(systemPrompt, messages) {
 }
 
 /** Offline path: a small model running fully in-browser via WebGPU.
- *  Same personal context, zero network, zero key.
- *
- *  Self-healing: if the engine was disposed or lost its GPU device (e.g.
- *  memory pressure), we rebuild it once from cached weights and retry, so
- *  one bad turn no longer wedges the assistant for the rest of the session. */
+ *  Same personal context, zero network, zero key. */
 async function chatWebLLM(systemPrompt, messages, onStatus) {
-  // The 1B offline model has a small effective context; keep the prompt
-  // within a safe budget so a large date-range block can't overflow it or
-  // exhaust GPU memory (which is what disposes the engine).
-  const safeSystem = clampForWebLLM(systemPrompt);
-
-  let engine = await ensureWebLLM(onStatus);
+  const engine = await ensureWebLLM(onStatus);
   onStatus?.("Thinking…");
-  try {
-    return await runWebLLM(engine, safeSystem, messages);
-  } catch (err) {
-    if (!isWebLLMRecoverable(err)) throw err;
-    resetWebLLM();
-    onStatus?.("Reloading model…");
-    try {
-      engine = await ensureWebLLM(onStatus);
-      onStatus?.("Thinking…");
-      return await runWebLLM(engine, safeSystem, messages);
-    } catch {
-      resetWebLLM();
-      throw new Error("WEBLLM_LOST");
-    }
-  }
-}
-
-async function runWebLLM(engine, systemPrompt, messages) {
   const reply = await engine.chat.completions.create({
     messages: [{ role: "system", content: systemPrompt }, ...messages],
     temperature: 0.4,
     max_tokens: MAX_TOKENS,
   });
   return reply.choices[0].message.content.trim();
-}
-
-const WEBLLM_SYSTEM_CHAR_BUDGET = 8000;
-function clampForWebLLM(systemPrompt) {
-  if (systemPrompt.length <= WEBLLM_SYSTEM_CHAR_BUDGET) return systemPrompt;
-  return (
-    systemPrompt.slice(0, WEBLLM_SYSTEM_CHAR_BUDGET) +
-    "\n\n[Context truncated to fit the offline model. Ask about a narrower date range for full detail.]"
-  );
 }
 
 /* ─────────────────────── suggested prompts ──────────────────────────── */
@@ -537,7 +381,6 @@ export async function getSuggestedPrompts() {
   if (pending.length > 3) prompts.push("Summarize my pending tasks by priority.");
   if (journals.length) prompts.push("What patterns do you see in my recent journal entries?");
   if (cards.length) prompts.push("What are the most important memories I've saved?");
-  prompts.push("What did I do last month?");
   prompts.push("What did I accomplish this week?");
   prompts.push("What have I been learning lately?");
   prompts.push("What should I reflect on today?");
@@ -573,10 +416,6 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString(undefined, {
     month: "short", day: "numeric", year: "numeric",
   });
-}
-
-function capitalize(s) {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
 function shiftKey(key, days) {

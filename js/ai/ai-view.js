@@ -170,8 +170,6 @@ export class AIView {
         }
         if (err.message === "NO_WEBGPU") {
           messagesEl.append(this._bubble("error", "Offline AI needs WebGPU — use Chrome or Edge, or switch to an API key from AI settings."));
-        } else if (err.message === "WEBLLM_LOST") {
-          messagesEl.append(this._bubble("error", "The offline model lost access to your device's GPU — this can happen under low memory, sometimes with a very large question. Reload the page to restart it, try a narrower date range, or switch to an API key in AI settings."));
         } else if (err.message === "INVALID_KEY") {
           messagesEl.append(this._bubble("error", "Your API key was rejected. Please reconnect with a valid key."));
         } else if (err.message === "RATE_LIMITED") {

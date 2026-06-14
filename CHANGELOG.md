@@ -5,50 +5,6 @@ All notable changes to MemoryOS are recorded here. The format follows
 `CACHE_VERSION` in `sw.js` as its release version — bumping it is how an
 update reaches users offline.
 
-## [0.3.10] — 2026-06-14
-
-### Fixed
-- **Offline (WebLLM) assistant no longer wedges after a mid-session failure.**
-  Previously, if the in-browser model's engine was disposed or lost its GPU
-  device (e.g. memory pressure), the service kept a permanent reference to the
-  dead engine, so every later message failed with "Object has already been
-  disposed" / "Model not loaded" until a full reload. The engine is now
-  self-healing: on those errors it rebuilds once from cached weights and
-  retries, surfacing a clear, actionable message (`WEBLLM_LOST`) only if the
-  rebuild also fails.
-- Engine initialization is serialized behind a single in-flight promise, so
-  two quick sends can't create two engines and dispose one another.
-- The offline system prompt is now clamped to a safe size, so a large
-  date-range context block can't overflow the small model's window or
-  exhaust GPU memory (a likely trigger of the disposal above).
-
-### Changed
-- `CACHE_VERSION` → `memoryos-v0.3.10`.
-- User Manual §18: troubleshooting note for the offline model recovering
-  mid-session, and a reminder that the small offline model is less precise.
-
-## [0.3.9] — 2026-06-14
-
-### Added
-- **The AI assistant can now answer by date or period.** When a question
-  refers to a time ("what happened last June?", "my notes from last week",
-  "what did I learn in May?", "in 2024", "June 12, 2025"), the assistant
-  fetches exactly the memories stored in that range — not just recent ones —
-  and answers from them. It can combine a kind with a period ("tasks this
-  month", "Memory Cards from 2025"), states the date range it used, and says
-  plainly when nothing is recorded for a period instead of inventing entries.
-  - New `services/time-query-service.js`: a pure, deterministic parser that
-    turns natural-language time and kind expressions into a date range +
-    type filter. Provider-agnostic (works in cloud and offline modes).
-  - `ai/ai-service.js`: new `buildDatedContext()` leads the model's context
-    with an authoritative "… from <period>" block, fetched via the existing
-    `repository.listMemoriesInRange()`. System-prompt guidance updated to use
-    it. Re-runs every turn, so follow-ups like "what about May?" just work.
-
-### Changed
-- `CACHE_VERSION` → `memoryos-v0.3.9`; new service precached for offline use.
-- User Manual §8: documents asking the assistant by date or period.
-
 ## [0.3.8] — 2026-06-14
 
 ### Changed
