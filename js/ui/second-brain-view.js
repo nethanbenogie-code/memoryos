@@ -24,6 +24,7 @@ import {
   SB_CATEGORIES,
 } from "../services/mnemosyne-service.js";
 import { openMemoryCardCapture } from "./memory-card-capture.js";
+import { openMemoryDetail } from "./memory-detail.js";
 import { el, emptyState, formatDayHeading } from "./components.js";
 import { showToast } from "./celebration.js";
 import * as memoryService from "../services/memory-service.js";
@@ -145,8 +146,8 @@ export class SecondBrainView {
           el("h3.ctx-heading", {}, "On this day in past years"),
           ...ctx.onThisDay.slice(0, 3).map((m) =>
             el("div.ctx-item.ctx-clickable", {
-              onclick: () => scrollToMemory(m.id),
-              title: "Click to find in your timeline",
+              onclick: () => openMemoryDetail(m),
+              title: "Click to read",
             },
               el("span.ctx-icon", {}, typeIcon(m.type)),
               el("div.ctx-body", {},
@@ -324,9 +325,20 @@ export class SecondBrainView {
     return el(
       `article.sb-entry${isMilestone ? ".sb-milestone" : ""}`,
       { dataset: { id: memory.id, type: memory.type } },
-      header, title, body,
-      ...extras,
-      tags,
+      el("div.sb-entry-main", {
+        role: "button",
+        tabindex: "0",
+        "aria-label": `Open ${displayTitle}`,
+        title: "Click to read",
+        onclick: () => openMemoryDetail(memory),
+        onkeydown: (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openMemoryDetail(memory); }
+        },
+      },
+        header, title, body,
+        ...extras,
+        tags,
+      ),
       actions
     );
   }
@@ -381,7 +393,3 @@ function truncate(text, max) {
   return clean.length > max ? clean.slice(0, max - 1) + "…" : clean;
 }
 
-function scrollToMemory(id) {
-  const el_ = document.querySelector(`[data-id="${id}"]`);
-  el_?.scrollIntoView({ behavior: "smooth", block: "center" });
-}

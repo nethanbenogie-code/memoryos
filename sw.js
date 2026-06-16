@@ -9,7 +9,7 @@
  * activate, and GitHub Pages serves the new files on next load.
  */
 
-const CACHE_VERSION = "memoryos-v0.3.1";
+const CACHE_VERSION = "memoryos-v0.3.9";
 
 const APP_SHELL = [
   "./",
@@ -39,6 +39,7 @@ const APP_SHELL = [
   "./js/ui/lock-screen.js",
   "./js/ui/second-brain-view.js",
   "./js/ui/memory-card-capture.js",
+  "./js/ui/memory-detail.js",
   "./docs/USER-MANUAL.md",
   "./js/ui/capture.js",
   "./js/ui/timeline-view.js",

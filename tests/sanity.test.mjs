@@ -286,6 +286,7 @@ test("Mnemosyne modules import cleanly", async () => {
   await import("../js/services/mnemosyne-service.js");
   await import("../js/ui/second-brain-view.js");
   await import("../js/ui/memory-card-capture.js");
+  await import("../js/ui/memory-detail.js");
 });
 
 await asyncChecks.catch(e => { failed++; console.error("FAIL  lock crypto — " + e.message); });

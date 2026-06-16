@@ -5,6 +5,25 @@ All notable changes to MemoryOS are recorded here. The format follows
 `CACHE_VERSION` in `sw.js` as its release version — bumping it is how an
 update reaches users offline.
 
+## [0.3.9] — 2026-06-14
+
+### Added
+- **Click a card to read it in full.** New `ui/memory-detail.js` opens a calm,
+  read-first detail view for any memory — the complete journal entry, note, or
+  idea (no truncation), and for a Memory Card its people, location, importance,
+  reflection, and Cognitive Links. URL pointers render as clickable links;
+  folder/drive pointers show as text. Edit (Memory Cards), Archive, and Close
+  are available from the view; Escape or the backdrop closes it.
+  - Timeline entries now expose a keyboard-accessible clickable region
+    (`role=button`, Enter/Space); the per-card Archive/Edit buttons still act
+    directly without opening the detail.
+  - "On this day" items open the detail view directly.
+  - Search results are clickable too (`memoryCard` gained an `onOpen` option).
+
+### Fixed
+- `CACHE_VERSION` was out of sync (`v0.3.1`) with the changelog; corrected and
+  bumped to `memoryos-v0.3.9`. The detail module is precached for offline use.
+
 ## [0.3.8] — 2026-06-14
 
 ### Changed
