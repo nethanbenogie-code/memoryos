@@ -5,6 +5,30 @@ All notable changes to MemoryOS are recorded here. The format follows
 `CACHE_VERSION` in `sw.js` as its release version — bumping it is how an
 update reaches users offline.
 
+## [0.3.11] — 2026-06-14
+
+### Added
+- **Update notice with backup-first.** New versions no longer apply silently.
+  When an update is ready, a banner appears with **Back up & update** — it saves
+  a backup file of your memories, then switches to the new version — alongside
+  **Update without backup** and **Later**. (Your memories live in on-device
+  storage and aren't touched by updates, but a backup first is peace of mind.)
+  - `services/update-service.js`: the new service worker installs and *waits*
+    rather than auto-activating; the page applies it on your command, then
+    reloads once it takes over. Checks for updates hourly and on refocus.
+  - `ui/update-prompt.js`: the update banner and a one-tap **Resume backups**
+    banner for when a folder's write permission lapses after reopening.
+- **Automatic folder-backup now runs at startup** if a backup folder is set;
+  if the browser dropped permission after a refresh, the resume banner offers
+  to re-grant it in one tap (inside the click, as the browser requires).
+
+### Changed
+- `CACHE_VERSION` → `memoryos-v0.3.11`.
+
+### Note
+- The notify-and-back-up flow takes effect from the *next* update onward — the
+  version currently installed on a device still updates the old (silent) way.
+
 ## [0.3.10] — 2026-06-14
 
 ### Added

@@ -1100,3 +1100,30 @@ button.chip:hover { border-color: var(--ink-soft); }
   .md-foot { flex-direction: column-reverse; align-items: stretch; }
   .md-foot-right { flex-direction: column-reverse; }
 }
+
+/* ------------------- update / resume banners ------------------- */
+.app-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: min(460px, calc(100vw - 24px));
+  background: var(--card, var(--paper));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  animation: banner-rise 0.25s ease;
+}
+@keyframes banner-rise { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.app-banner-inner { display: flex; gap: 12px; padding: 14px 16px; }
+.app-banner-icon { font-size: 20px; color: var(--accent); flex-shrink: 0; line-height: 1.4; }
+.app-banner-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.app-banner-title { font-size: 14.5px; }
+.app-banner-text { margin: 0; font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+.app-banner-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.app-banner-actions .btn { font-size: 13px; padding: 7px 12px; }
+@media (max-width: 540px) {
+  .app-banner { bottom: 74px; } /* clear the mobile tab bar */
+  .app-banner-actions { width: 100%; }
+}

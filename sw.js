@@ -9,7 +9,7 @@
  * activate, and GitHub Pages serves the new files on next load.
  */
 
-const CACHE_VERSION = "memoryos-v0.3.10";
+const CACHE_VERSION = "memoryos-v0.3.11";
 
 const APP_SHELL = [
   "./",
@@ -18,6 +18,8 @@ const APP_SHELL = [
   "./css/app.css",
   "./css/accessibility.css",
   "./js/app.js",
+  "./js/services/update-service.js",
+  "./js/ui/update-prompt.js",
   "./js/ui/settings-view.js",
   "./js/services/accessibility-service.js",
   "./js/core/ids.js",
@@ -57,7 +59,15 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_VERSION).then((cache) => cache.addAll(APP_SHELL))
   );
-  self.skipWaiting();
+  // NOTE: no skipWaiting() here. The new worker waits until the page
+  // explicitly tells it to take over (after backing up), so updates never
+  // apply silently underneath the user.
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("activate", (event) => {

@@ -15,6 +15,9 @@ import { el } from "./ui/components.js";
 import { TimelineView } from "./ui/timeline-view.js";
 import { SettingsView } from "./ui/settings-view.js";
 import * as accessibility from "./services/accessibility-service.js";
+import { registerServiceWorker } from "./services/update-service.js";
+import { runAutoBackupIfDue } from "./services/backup-service.js";
+import { initUpdatePrompt, showResumeBackupsBanner } from "./ui/update-prompt.js";
 import { SearchView } from "./ui/search-view.js";
 import { TasksView } from "./ui/tasks-view.js";
 import { JournalView } from "./ui/journal-view.js";
@@ -103,6 +106,16 @@ async function main() {
 
   await showView("brain", host);
   registerServiceWorker();
+  initUpdatePrompt();
+
+  // Run today's automatic folder-backup if one is configured. If the
+  // browser dropped write permission after a refresh, offer a one-tap resume.
+  try {
+    const autoState = await runAutoBackupIfDue();
+    if (autoState === "needs-permission") showResumeBackupsBanner();
+  } catch (err) {
+    console.warn("[app] auto-backup check failed:", err);
+  }
 
   // After a restore, rebuild the search index and re-render the open view.
   bus.on("backup:restored", async () => {
@@ -171,12 +184,6 @@ async function showView(id, host) {
   bus.emit("view:changed", { view: id });
 }
 
-function registerServiceWorker() {
-  if (!("serviceWorker" in navigator)) return;
-  navigator.serviceWorker
-    .register("./sw.js")
-    .catch((err) => console.warn("[sw] registration failed:", err));
-}
 
 main().catch((err) => {
   console.error("[app] fatal startup error:", err);
