@@ -68,10 +68,13 @@ async function boot() {
   // Emit the first navigation; for PWA, also listen for install/beforeinstallprompt
   bus.emit("navigate", { view: "brain" });
 
-  // Update available (service worker has new code).
+  // When a new service worker takes control (after an update), reload once so
+  // the page swaps to the fresh code instead of sitting on stale cache.
+  let __reloadingForUpdate = false;
   navigator.serviceWorker?.addEventListener("controllerchange", () => {
-    const banner = document.getElementById("update-available");
-    if (banner) banner.style.display = "block";
+    if (__reloadingForUpdate) return;
+    __reloadingForUpdate = true;
+    window.location.reload();
   });
 }
 
