@@ -8,7 +8,6 @@
 
 import { bus } from "../core/events.js";
 import * as backup from "../services/backup-service.js";
-import * as storage from "../services/storage-service.js";
 import { el, emptyState } from "./components.js";
 import { showToast } from "./celebration.js";
 import { shareApp } from "./share.js";
@@ -37,16 +36,22 @@ export class BackupView {
 
   async render() {
     const status = await backup.getBackupStatus();
-    const storageInfo = await storage.getStorageInfo();
+    // Attach storage estimate to the status object for the card
+    try {
+      if (navigator.storage?.estimate) {
+        const est = await navigator.storage.estimate();
+        status.storageUsed = est.usage ?? 0;
+        status.storageQuota = est.quota ?? 0;
+        status.persistent = await navigator.storage.persisted?.() ?? false;
+      }
+    } catch {}
 
     this.container.replaceChildren(
       el("header.view-head", {}, el("h2.view-title", {}, "Backup")),
       this._statusCard(status),
       this._actions(status),
       backup.autoBackupSupported() ? await this._autoSection(status) : null,
-      this._storageSection(storageInfo),
       this._restoreSection(),
-      backup.canShareDatabase() ? this._shareSection(status) : null,
       await this._lockSection(),
       this._explainer(),
       this._tellAFriend(),
@@ -219,50 +224,6 @@ export class BackupView {
     return host;
   }
 
-  _storageSection(storageInfo) {
-    const formatted = storage.formatStorageInfo(storageInfo);
-    const host = el("section.journal-section");
-    host.append(el("h3.section-heading", {}, "Database location"));
-
-    host.append(
-      el("p.backup-hint", {}, "Stored on this device in your browser's local storage."),
-      el("p.backup-sub", {}, `Backup folder: ${storageInfo.autoBackupDir || "Not set"}`),
-      el("p.backup-sub", {}, formatted.display)
-    );
-
-    if (!storageInfo.persistent && storage.isPersistentStorageSupported()) {
-      host.append(
-        el(
-          "p.backup-hint",
-          {},
-          "Your browser could clear this data if space gets low. Protect it with one tap:"
-        ),
-        el(
-          "button.btn",
-          {
-            type: "button",
-            onclick: async () => {
-              const result = await storage.requestPersistentStorage();
-              showToast(
-                result.success
-                  ? "Database protected — won't be cleared by the browser."
-                  : `Couldn't enable protection: ${result.reason}`
-              );
-              this.render();
-            },
-          },
-          "Protect database"
-        )
-      );
-    } else if (storageInfo.persistent) {
-      host.append(
-        el("p.backup-sub", {}, "✓ Database is protected — the browser won't clear it.")
-      );
-    }
-
-    return host;
-  }
-
   _restoreSection() {
     const input = el("input", {
       type: "file",
@@ -301,73 +262,6 @@ export class BackupView {
       el("button.btn", { type: "button", onclick: () => input.click() }, "Restore from a backup file"),
       input
     );
-  }
-
-  _shareSection(status) {
-    const importInput = el("input", {
-      type: "file",
-      accept: ".json,application/json",
-      style: "display:none",
-      "aria-hidden": "true",
-    });
-    importInput.addEventListener("change", async () => {
-      const file = importInput.files?.[0];
-      if (!file) return;
-      try {
-        const data = JSON.parse(await file.text());
-        const report = await backup.importDatabaseExport(data);
-        showToast(
-          `Merged: ${report.inserted} added, ${report.updated} updated.`,
-          { accent: true }
-        );
-      } catch (err) {
-        showToast(err.message || "That file couldn't be imported.");
-      } finally {
-        importInput.value = "";
-      }
-    });
-
-    const host = el("section.journal-section");
-    host.append(el("h3.section-heading", {}, "Share database"));
-
-    host.append(
-      el(
-        "p.backup-hint",
-        {},
-        "⚠️ Warning: Database exports include all your memories and settings. Only share with people you completely trust. Regular backups are safer."
-      ),
-      el(
-        "button.btn",
-        {
-          type: "button",
-          disabled: status.memoryCount === 0 ? "disabled" : null,
-          onclick: async () => {
-            if (!confirm("Share your entire database? This includes all memories.")) return;
-            try {
-              await backup.shareDatabase();
-              showToast("Database shared.", { accent: true });
-            } catch (err) {
-              if (err?.name !== "AbortError") {
-                console.error(err);
-                showToast("Sharing failed — try again.");
-              }
-            }
-          },
-        },
-        "📤 Share entire database"
-      ),
-      el(
-        "button.btn",
-        {
-          type: "button",
-          onclick: () => importInput.click(),
-        },
-        "📥 Import database export"
-      ),
-      importInput
-    );
-
-    return host;
   }
 
   _tellAFriend() {
@@ -424,7 +318,7 @@ export class BackupView {
         } }, "Turn on app lock")
       );
       host.append(
-        el("p.backup-hint", {}, "Recommended if other people use this device. The lock asks for a password whenever MemoryOS opens. You'll get a recovery code in case you forget it — the lock keeps everything private."),
+        el("p.backup-hint", {}, "Recommended if other people use this device. The lock asks for a password whenever MemoryOS opens. You'll get a recovery code in case you forget it — the lock keeps casual snoops out, like a PIN on your phone."),
         el("button.btn", { type: "button", onclick: (e) => { e.target.replaceWith(form); pass.focus(); } }, "Set up app lock")
       );
       return host;
@@ -480,8 +374,16 @@ export class BackupView {
       el(
         "p.backup-hint",
         {},
-        "Your memories live only on this device — that's what keeps them private. A backup file is your safety net if this device is lost, broken, or its browser data gets cleared. One tap and everything is safe elsewhere too."
+        "Your memories live only on this device — that's what keeps them private. A backup file is your safety net if this device is lost, broken, or its browser data gets cleared. One tap a week is enough."
       )
     );
   }
+}
+
+/** @param {number} bytes */
+function fmtBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
 }
