@@ -20,10 +20,14 @@
 
 import { bus } from "../core/events.js";
 import * as repo from "../data/repository.js";
+import { isZipSupported, zipSingleFile, unzipFirstFile, looksLikeZip } from "./zip-util.js";
 
 export const BACKUP_FORMAT = "memoryos-backup";
 export const BACKUP_SCHEMA = 1;
 export const STALE_AFTER_DAYS = 7;
+
+/** The JSON entry name inside a .zip backup. */
+const INNER_JSON_NAME = "memoryos-backup.json";
 
 /* ------------------------------ snapshot ------------------------------ */
 
@@ -43,45 +47,62 @@ export async function buildSnapshot() {
   };
 }
 
-/** "memoryos-backup-2026-06-13-1430.json" */
-export function backupFilename(now = new Date()) {
+/** "memoryos-backup-2026-06-13-1430.zip" (or .json on older browsers) */
+export function backupFilename(now = new Date(), ext = ".zip") {
   const pad = (n) => String(n).padStart(2, "0");
   return (
     `memoryos-backup-${now.getFullYear()}-${pad(now.getMonth() + 1)}-` +
-    `${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.json`
+    `${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${ext}`
   );
 }
 
-function snapshotBlob(snapshot) {
-  // Pretty-printed on purpose: a user who opens it in Notepad should
-  // see their own words and trust the file.
-  return new Blob([JSON.stringify(snapshot, null, 2)], {
-    type: "application/json",
-  });
+function snapshotJson(snapshot) {
+  // Pretty-printed on purpose: a user who opens it should see their own
+  // words and trust the file. (Inside a .zip this also compresses well.)
+  return JSON.stringify(snapshot, null, 2);
+}
+
+/**
+ * Build the backup file. Compresses to a real .zip where the browser
+ * supports it (typically 70–90% smaller); falls back to plain JSON
+ * otherwise. Returns the Blob plus the extension actually used.
+ */
+async function snapshotFile(snapshot) {
+  const json = snapshotJson(snapshot);
+  if (isZipSupported()) {
+    try {
+      const blob = await zipSingleFile(INNER_JSON_NAME, json);
+      return { blob, ext: ".zip" };
+    } catch (err) {
+      console.warn("[backup] zip failed, using plain JSON:", err);
+    }
+  }
+  return { blob: new Blob([json], { type: "application/json" }), ext: ".json" };
 }
 
 /* --------------------------- one-tap actions --------------------------- */
 
-/** Download a backup file. Returns the filename. */
+/** Download a backup file (.zip where supported). Returns the filename. */
 export async function downloadBackup() {
   const snapshot = await buildSnapshot();
-  const blob = snapshotBlob(snapshot);
+  const { blob, ext } = await snapshotFile(snapshot);
+  const filename = backupFilename(new Date(), ext);
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = backupFilename();
+  a.download = filename;
   document.body.append(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 5000);
   await markBackedUp("download");
-  return a.download;
+  return filename;
 }
 
 /** Can this device share files natively? */
 export function canShareBackup() {
   try {
-    const probe = new File(["x"], "probe.json", { type: "application/json" });
+    const probe = new File(["x"], "probe.zip", { type: "application/zip" });
     return !!navigator.canShare?.({ files: [probe] });
   } catch {
     return false;
@@ -91,9 +112,9 @@ export function canShareBackup() {
 /** Open the native share sheet with the backup file. */
 export async function shareBackup() {
   const snapshot = await buildSnapshot();
-  const file = new File([snapshotBlob(snapshot)], backupFilename(), {
-    type: "application/json",
-  });
+  const { blob, ext } = await snapshotFile(snapshot);
+  const filename = backupFilename(new Date(), ext);
+  const file = new File([blob], filename, { type: blob.type });
   await navigator.share({
     files: [file],
     title: "MemoryOS backup",
@@ -163,9 +184,21 @@ export function validateSnapshot(data) {
  * @returns {Promise<{inserted:number,updated:number,unchanged:number,newLinks:number}>}
  */
 export async function restoreFromFile(file) {
+  let jsonText;
+  try {
+    const buf = await file.arrayBuffer();
+    if (looksLikeZip(buf)) {
+      jsonText = (await unzipFirstFile(buf)).text; // .zip backup
+    } else {
+      jsonText = new TextDecoder().decode(new Uint8Array(buf)); // legacy .json
+    }
+  } catch {
+    throw new Error("That file couldn't be read as a backup.");
+  }
+
   let data;
   try {
-    data = JSON.parse(await file.text());
+    data = JSON.parse(jsonText);
   } catch {
     throw new Error("That file couldn't be read as a backup.");
   }
@@ -257,12 +290,13 @@ export async function reauthorizeAutoBackup() {
 /** @param {FileSystemDirectoryHandle} dir */
 async function writeAutoBackup(dir) {
   const snapshot = await buildSnapshot();
+  const { blob, ext } = await snapshotFile(snapshot);
   const today = new Date().toISOString().slice(0, 10);
-  const fileHandle = await dir.getFileHandle(`memoryos-backup-${today}.json`, {
+  const fileHandle = await dir.getFileHandle(`memoryos-backup-${today}${ext}`, {
     create: true,
   });
   const writable = await fileHandle.createWritable();
-  await writable.write(snapshotBlob(snapshot));
+  await writable.write(blob);
   await writable.close();
   await repo.setMeta("lastAutoBackupDay", today);
   await markBackedUp("auto");

@@ -227,7 +227,7 @@ export class BackupView {
   _restoreSection() {
     const input = el("input", {
       type: "file",
-      accept: ".json,application/json",
+      accept: ".zip,.json,application/zip,application/json",
       style: "display:none",
       "aria-hidden": "true",
     });

@@ -5,6 +5,23 @@ All notable changes to MemoryOS are recorded here. The format follows
 `CACHE_VERSION` in `sw.js` as its release version — bumping it is how an
 update reaches users offline.
 
+## [0.3.12] — 2026-06-14
+
+### Added
+- **Compressed (.zip) backups.** Backups now save as a real `.zip` file —
+  typically 70–90% smaller — that opens natively on Windows/macOS and in any
+  archive tool. Restore accepts the new `.zip` *and* old plain `.json` backups
+  automatically, so nothing you've already saved is orphaned. Auto folder-backups
+  and the native share sheet use the compressed file too.
+  - New dependency-free `services/zip-util.js` builds and reads a single-entry
+    ZIP using the browser's native Compression Streams API (deflate-raw) — no
+    library shipped. Falls back to plain JSON on browsers without the API.
+  - Restore now detects the file type by its bytes (the ZIP "PK" magic), so it
+    works regardless of extension.
+
+### Changed
+- `CACHE_VERSION` → `memoryos-v0.3.12`; restore file picker accepts `.zip` too.
+
 ## [0.3.11] — 2026-06-14
 
 ### Added

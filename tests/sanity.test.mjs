@@ -199,8 +199,9 @@ test("validateSnapshot rejects garbage, accepts real backups", () => {
   assert(validateSnapshot({ format: BACKUP_FORMAT, schema: BACKUP_SCHEMA, memories: [], links: [] }) === null);
 });
 test("backupFilename is dated and filesystem-safe", () => {
-  const name = backupFilename(new Date(2026, 5, 13, 14, 5));
-  assert(name === "memoryos-backup-2026-06-13-1405.json", name);
+  const d = new Date(2026, 5, 13, 14, 5);
+  assert(backupFilename(d) === "memoryos-backup-2026-06-13-1405.zip", backupFilename(d));
+  assert(backupFilename(d, ".json") === "memoryos-backup-2026-06-13-1405.json", "ext override (legacy)");
 });
 test("backup modules import cleanly without a DOM", async () => {
   await import("../js/ui/backup-view.js");
