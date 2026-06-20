@@ -5,6 +5,30 @@ All notable changes to MemoryOS are recorded here. The format follows
 `CACHE_VERSION` in `sw.js` as its release version — bumping it is how an
 update reaches users offline.
 
+## [0.3.10] — 2026-06-14
+
+### Fixed
+- **App now boots.** `app.js` imported `js/ui/views.js`, which was missing —
+  the app could not start. Reconstructed it: a view registry + sidebar/tab-bar
+  navigation (including the new **Settings** and **To-Do** views), Ctrl/Cmd-K
+  quick capture, and active-route highlighting.
+
+### Added
+- **Font size & accessibility in Settings (reachable now).** The existing
+  accessibility engine (font scaling 85–150%, line spacing, high contrast,
+  reduced motion) is now wired into navigation, **applied on every load**
+  (`accessibility.initialize()` at boot), and fully styled — including the
+  high-contrast and reduced-motion rules that were missing. Built for elderly
+  users and anyone with low vision.
+- **Always-save (persistent storage) on by default.** At startup the app asks
+  the browser to keep its database persistent (`navigator.storage.persist()`),
+  so data isn't evicted under storage pressure and the user no longer has to
+  click "Protect database" by hand. The manual control in Backup still works.
+
+### Changed
+- Default landing view is now **Second Brain** (the first nav item).
+- `CACHE_VERSION` → `memoryos-v0.3.10`; new modules precached for offline use.
+
 ## [0.3.9] — 2026-06-14
 
 ### Added

@@ -22,6 +22,7 @@ import { bus } from "../core/events.js";
 import * as repo from "../data/repository.js";
 
 export const BACKUP_FORMAT = "memoryos-backup";
+export const DATABASE_EXPORT_FORMAT = "memoryos-database-export";
 export const BACKUP_SCHEMA = 1;
 export const STALE_AFTER_DAYS = 7;
 
@@ -214,6 +215,32 @@ export async function disableAutoBackup() {
 }
 
 /**
+ * Auto-restore auto-backup on app startup.
+ * If it was previously configured but permission was lost, try to re-grant it.
+ * Runs silently at boot.
+ */
+export async function autoRestoreAutoBackup() {
+  const dir = await repo.getMeta("autoBackupDir");
+  if (!dir) return; // Not configured, nothing to restore
+
+  try {
+    const permission = await dir.queryPermission({ mode: "readwrite" });
+    if (permission === "granted") {
+      // All good, let runAutoBackupIfDue handle it
+      return;
+    }
+
+    // Permission was lost; try to re-grant silently
+    const newPermission = await dir.requestPermission({ mode: "readwrite" });
+    if (newPermission === "granted") {
+      console.log("[backup] Auto-backup permission restored automatically");
+    }
+  } catch (err) {
+    console.warn("[backup] Could not restore auto-backup:", err);
+  }
+}
+
+/**
  * Called at boot: if a folder is configured, permission still stands,
  * and today's file hasn't been written yet — write it, silently.
  * Returns a status string for the Backup view.
@@ -266,6 +293,90 @@ async function writeAutoBackup(dir) {
   await writable.close();
   await repo.setMeta("lastAutoBackupDay", today);
   await markBackedUp("auto");
+}
+
+/* ----------------------- database export/import ----------------------- */
+
+/**
+ * Create a shareable database export (includes all memories and settings).
+ * IMPORTANT: This is the FULL database, not a regular backup.
+ * Users should only share with people they trust completely.
+ */
+export async function exportDatabase() {
+  const snapshot = await buildSnapshot();
+  return {
+    format: DATABASE_EXPORT_FORMAT,
+    schema: BACKUP_SCHEMA,
+    exportedAt: new Date().toISOString(),
+    warning: "This includes all memories, links, and settings. Only share with people you completely trust.",
+    data: snapshot,
+  };
+}
+
+/**
+ * Validate a database export file.
+ */
+export function validateDatabaseExport(data) {
+  if (!data || typeof data !== "object") return "Not a readable file.";
+  if (data.format !== DATABASE_EXPORT_FORMAT) return "This is not a MemoryOS database export.";
+  if (data.schema > BACKUP_SCHEMA) {
+    return "This export was made by a newer MemoryOS. Update the app, then import.";
+  }
+  if (!data.data || !Array.isArray(data.data.memories)) return "This export file is incomplete.";
+  return null; // valid
+}
+
+/**
+ * Merge someone else's database export into yours.
+ * Same merge rules as a regular restore.
+ */
+export async function importDatabaseExport(data) {
+  const problem = validateDatabaseExport(data);
+  if (problem) throw new Error(problem);
+
+  const [existingMemories, existingLinks] = await Promise.all([
+    repo.listMemoriesRaw(),
+    repo.listAllLinks(),
+  ]);
+
+  const { memoriesToWrite, linksToWrite, report } = planMerge(
+    existingMemories,
+    existingLinks,
+    data.data
+  );
+
+  if (memoriesToWrite.length || linksToWrite.length) {
+    await repo.bulkUpsert(memoriesToWrite, linksToWrite);
+  }
+
+  bus.emit("backup:restored", { report });
+  return report;
+}
+
+/**
+ * Can this device share database files natively?
+ */
+export function canShareDatabase() {
+  return canShareBackup(); // Same check
+}
+
+/**
+ * Share the full database export via native share sheet.
+ * WARNING: This shares everything including sensitive data.
+ */
+export async function shareDatabase() {
+  const exported = await exportDatabase();
+  const file = new File(
+    [JSON.stringify(exported, null, 2)],
+    `memoryos-database-export-${new Date().toISOString().slice(0, 10)}.json`,
+    { type: "application/json" }
+  );
+
+  await navigator.share({
+    files: [file],
+    title: "MemoryOS database export",
+    text: "My MemoryOS database. This includes all memories and settings.",
+  });
 }
 
 /* -------------------------------- status -------------------------------- */
