@@ -5,6 +5,23 @@ All notable changes to MemoryOS are recorded here. The format follows
 `CACHE_VERSION` in `sw.js` as its release version — bumping it is how an
 update reaches users offline.
 
+## [0.3.10] — 2026-06-14
+
+### Added
+- **Text size & readability settings** for older eyes and low vision. A new
+  **Settings** screen (in the navigation) offers five text sizes, line spacing,
+  and a high-contrast mode — applied live and remembered across sessions.
+  Because the app is laid out in pixels, text scaling uses CSS `zoom`, so the
+  whole interface enlarges uniformly (not just a few rem-based bits). Settings
+  apply before first paint, so there's no flash of small text on load.
+  - `services/accessibility-service.js` (localStorage for instant apply, mirrored
+    into the meta store so it travels with backups) and `ui/settings-view.js`.
+  - `css/accessibility.css`, linked and precached.
+
+### Changed
+- `CACHE_VERSION` → `memoryos-v0.3.10`.
+- Removed a stale nested `memoryos/` duplicate folder.
+
 ## [0.3.9] — 2026-06-14
 
 ### Added

@@ -13,6 +13,8 @@ import { searchIndex } from "./services/search-service.js";
 import { initCapture, openCapture, bindCaptureShortcut } from "./ui/capture.js";
 import { el } from "./ui/components.js";
 import { TimelineView } from "./ui/timeline-view.js";
+import { SettingsView } from "./ui/settings-view.js";
+import * as accessibility from "./services/accessibility-service.js";
 import { SearchView } from "./ui/search-view.js";
 import { TasksView } from "./ui/tasks-view.js";
 import { JournalView } from "./ui/journal-view.js";
@@ -36,6 +38,7 @@ const VIEWS = [
   { id: "tasks", label: "Tasks", icon: "☑", View: TasksView },
   { id: "journal", label: "Journal", icon: "✎", View: JournalView },
   { id: "backup", label: "Backup", icon: "⛉", View: BackupView },
+  { id: "settings", label: "Settings", icon: "⚙", View: SettingsView },
   { id: "about", label: "About MemoryOS", icon: "◈", View: AboutView, hidden: true },
   { id: "manual", label: "User manual", icon: "✦", View: ManualView, hidden: true },
 ];
@@ -44,6 +47,8 @@ let currentView = null;
 let currentId = null;
 
 async function main() {
+  // Apply saved text-size / contrast immediately, before first paint.
+  try { accessibility.initialize(); } catch (e) { console.warn("[app] a11y init", e); }
   // Request persistent storage at boot. This tells the browser this
   // data matters and should not be evicted when disk space is low.
   // Works silently — no permission prompt shown to the user on most

@@ -1,153 +1,123 @@
 /**
- * MemoryOS — ui/settings-view.js (Updated)
+ * MemoryOS — ui/settings-view.js
  *
- * Settings view with accessibility and appearance options.
+ * Display & accessibility settings — built for older eyes and low vision.
+ * Text size, line spacing, and high contrast, applied live and remembered
+ * across sessions. Follows the standard view contract (mount/unmount).
  */
 
 import { bus } from "../core/events.js";
-import * as accessibility from "../services/accessibility-service.js";
-import { el, emptyState } from "./components.js";
+import { el } from "./components.js";
 import { showToast } from "./celebration.js";
+import * as a11y from "../services/accessibility-service.js";
 
 export class SettingsView {
   constructor(container) {
     this.container = container;
-    this.unsubscribes = [];
+    this.offs = [];
   }
 
   async mount() {
-    const refresh = () => this.render();
-    this.unsubscribes = [
-      bus.on("accessibility:changed", refresh),
-    ];
-    await this.render();
+    this.offs.push(bus.on("display:changed", () => this.render()));
+    this.render();
   }
 
   unmount() {
-    for (const off of this.unsubscribes) off();
-    this.unsubscribes = [];
+    for (const off of this.offs) off();
+    this.offs = [];
   }
 
-  async render() {
-    const settings = await accessibility.getCurrentSettings();
-    const fontSizes = accessibility.getFontSizes();
-
+  render() {
+    const s = a11y.getSettings();
     this.container.replaceChildren(
       el("header.view-head", {}, el("h2.view-title", {}, "Settings")),
-      this._fontSizeSection(settings, fontSizes),
-      this._lineSpacingSection(settings),
-      this._contrastSection(settings),
-      this._accessibilityNotesSection(),
-      this._resetSection()
-    );
-  }
-
-  _fontSizeSection(settings, fontSizes) {
-    return el("section.settings-section", {},
-      el("h3.section-heading", {}, "Font Size"),
-      el("p.settings-hint", {}, "Choose text size that's comfortable for you. Changes apply immediately."),
-      el("div.font-size-options", {},
-        fontSizes.map((size) =>
-          el("button.btn.font-size-btn", {
-            type: "button",
-            "aria-pressed": String(Math.abs(settings.fontScale - size.value) < 0.01),
-            onclick: async () => {
-              await accessibility.setFontScale(size.value);
-              showToast(`Text size set to ${size.label}`);
-              this.render();
-            },
-            style: `font-size: ${15 * size.value}px;`,
-          }, size.label)
-        )
-      ),
-      el("div.font-size-preview", {},
-        el("p", {}, "This is how your text will look. You can change it anytime.")
+      el("div.settings", {},
+        this._textSize(s),
+        this._lineSpacing(s),
+        this._contrast(s),
+        this._preview(),
+        this._reset()
       )
     );
   }
 
-  _lineSpacingSection(settings) {
-    const spacings = [
-      { value: "normal", label: "Normal", description: "Standard spacing" },
-      { value: "relaxed", label: "Relaxed", description: "More comfortable spacing" },
-      { value: "spacious", label: "Spacious", description: "Maximum spacing" },
-    ];
-
+  _textSize(s) {
     return el("section.settings-section", {},
-      el("h3.section-heading", {}, "Line Spacing"),
-      el("p.settings-hint", {}, "Adjust spacing between lines for easier reading."),
+      el("h3.section-heading", {}, "Text size"),
+      el("p.settings-hint", {}, "Make the writing bigger and easier to read. Changes apply right away."),
+      el("div.font-size-options", {},
+        ...a11y.FONT_SIZES.map((size) =>
+          el("button.btn.font-size-btn", {
+            type: "button",
+            "aria-pressed": String(Math.abs(s.fontScale - size.value) < 0.001),
+            style: `font-size:${15 * size.value}px;`,
+            onclick: () => {
+              a11y.setFontScale(size.value);
+              showToast(`Text size: ${size.label}`);
+            },
+          }, size.label)
+        )
+      )
+    );
+  }
+
+  _lineSpacing(s) {
+    return el("section.settings-section", {},
+      el("h3.section-heading", {}, "Line spacing"),
+      el("p.settings-hint", {}, "More space between lines can be easier to follow."),
       el("div.spacing-options", {},
-        spacings.map((s) =>
+        ...a11y.LINE_SPACINGS.map((opt) =>
           el("label.settings-radio", {},
             el("input", {
-              type: "radio",
-              name: "line-spacing",
-              value: s.value,
-              checked: settings.lineSpacing === s.value,
-              onchange: async () => {
-                await accessibility.setLineSpacing(s.value);
-                showToast(`Line spacing set to ${s.label}`);
-                this.render();
-              },
+              type: "radio", name: "line-spacing", value: opt.value,
+              checked: s.lineSpacing === opt.value,
+              onchange: () => { a11y.setLineSpacing(opt.value); showToast(`Line spacing: ${opt.label}`); },
             }),
-            el("span.radio-label", {},
-              el("strong", {}, s.label),
-              el("small", {}, s.description)
-            )
+            el("span.radio-label", {}, el("strong", {}, opt.label))
           )
         )
       )
     );
   }
 
-  _contrastSection(settings) {
+  _contrast(s) {
     return el("section.settings-section", {},
-      el("h3.section-heading", {}, "Visual Enhancements"),
+      el("h3.section-heading", {}, "Contrast"),
       el("label.settings-checkbox", {},
         el("input", {
-          type: "checkbox",
-          checked: settings.highContrast,
-          onchange: async (e) => {
-            await accessibility.setHighContrast(e.target.checked);
+          type: "checkbox", checked: s.highContrast,
+          onchange: (e) => {
+            a11y.setHighContrast(e.target.checked);
             showToast(e.target.checked ? "High contrast on" : "High contrast off");
-            this.render();
           },
         }),
         el("span.checkbox-label", {},
-          "🎨 High Contrast Mode",
-          el("small", {}, "Darker text and borders for better visibility")
+          el("strong", {}, "High contrast"),
+          el("small", {}, "Darker text and stronger borders for better visibility")
         )
       )
     );
   }
 
-  _accessibilityNotesSection() {
+  _preview() {
     return el("section.settings-section", {},
-      el("h3.section-heading", {}, "Accessibility Tips"),
-      el("ul.settings-tips", {},
-        el("li", {}, "Use a larger font size if you have vision problems"),
-        el("li", {}, "Relaxed or spacious line spacing can help with focus"),
-        el("li", {}, "High contrast mode increases text readability"),
-        el("li", {}, "All settings save automatically and persist across sessions"),
-        el("li", {}, "You can change settings anytime from this screen")
+      el("h3.section-heading", {}, "Preview"),
+      el("div.settings-preview", {},
+        el("p", {}, "This is how your text looks. Adjust the size above until it's comfortable to read."),
+        el("p.settings-preview-soft", {}, "Smaller, secondary text looks like this.")
       )
     );
   }
 
-  _resetSection() {
+  _reset() {
     return el("section.settings-section.settings-danger", {},
-      el("h3.section-heading", {}, "Reset"),
-      el("p.settings-hint", {}, "Restore all accessibility settings to defaults."),
-      el("button.btn.btn-quiet.btn-danger", {
+      el("button.btn.btn-quiet", {
         type: "button",
-        onclick: async () => {
-          if (confirm("Reset all accessibility settings to defaults?")) {
-            await accessibility.resetToDefaults();
-            showToast("Settings reset to defaults");
-            this.render();
-          }
+        onclick: () => {
+          a11y.resetToDefaults();
+          showToast("Display settings reset");
         },
-      }, "Reset to Defaults")
+      }, "Reset to defaults")
     );
   }
 }
