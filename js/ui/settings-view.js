@@ -45,7 +45,7 @@ export class SettingsView {
   _fontSizeSection(settings, fontSizes) {
     return el("section.settings-section", {},
       el("h3.section-heading", {}, "Font Size"),
-      el("p.settings-hint", {}, "Choose text size that's comfortable for you. Changes apply immediately.ú"),
+      el("p.settings-hint", {}, "Choose text size that's comfortable for you. Changes apply immediately."),
       el("div.font-size-options", {},
         fontSizes.map((size) =>
           el("button.btn.font-size-btn", {
