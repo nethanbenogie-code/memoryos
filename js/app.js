@@ -1,186 +1,60 @@
 /**
  * MemoryOS — app.js
  *
- * Bootstrap: open the database, warm the search index, wire navigation,
- * register the service worker. Views are mounted into one host element;
- * a tiny view registry stands in for a router until the app earns one.
+ * Application bootstrap: connect to the database, set up the event bus,
+ * wire navigation, and kick off the active view.
  */
 
+import * as db from "./data/db.js";
+import * as repo from "./data/repository.js";
 import { bus } from "./core/events.js";
-import { openDatabase } from "./data/db.js";
-import * as memoryService from "./services/memory-service.js";
-import { searchIndex } from "./services/search-service.js";
-import { initCapture, openCapture, bindCaptureShortcut } from "./ui/capture.js";
-import { el } from "./ui/components.js";
-import { TimelineView } from "./ui/timeline-view.js";
-import { SearchView } from "./ui/search-view.js";
-import { TasksView } from "./ui/tasks-view.js";
-import { JournalView } from "./ui/journal-view.js";
-import { BackupView } from "./ui/backup-view.js";
-import { showToast } from "./ui/celebration.js";
-import { getBackupStatus } from "./services/backup-service.js";
-import { shareApp } from "./ui/share.js";
-import { AboutView } from "./ui/about-view.js";
-import { ManualView } from "./ui/manual-view.js";
-import { SecondBrainView } from "./ui/second-brain-view.js";
-import { initMemoryCardCapture } from "./ui/memory-card-capture.js";
-import { isLockEnabled, lockNow } from "./services/lock-service.js";
-import { showLockScreen } from "./ui/lock-screen.js";
-import { initCelebrations } from "./ui/celebration.js";
-import { startReminderLoop } from "./services/reminder-service.js";
+import * as backup from "./services/backup-service.js";
+import { registerAllViews } from "./ui/views.js";
 
-const VIEWS = [
-  { id: "brain", label: "Second Brain", icon: "◈", View: SecondBrainView },
-  { id: "timeline", label: "Timeline", icon: "◷", View: TimelineView },
-  { id: "search", label: "Search", icon: "⌕", View: SearchView },
-  { id: "tasks", label: "Tasks", icon: "☑", View: TasksView },
-  { id: "journal", label: "Journal", icon: "✎", View: JournalView },
-  { id: "backup", label: "Backup", icon: "⛉", View: BackupView },
-  { id: "about", label: "About MemoryOS", icon: "◈", View: AboutView, hidden: true },
-  { id: "manual", label: "User manual", icon: "✦", View: ManualView, hidden: true },
-];
+// Open the database and warm up all repositories.
+async function boot() {
+  console.log("[app] boot");
 
-let currentView = null;
-let currentId = null;
+  // Initialize database
+  await db.openDatabase();
+  await repo.initializeRepository();
 
-async function main() {
-  // Request persistent storage at boot. This tells the browser this
-  // data matters and should not be evicted when disk space is low.
-  // Works silently — no permission prompt shown to the user on most
-  // browsers when the app is installed as a PWA.
-  if (navigator.storage?.persist) {
-    navigator.storage.persist().catch(() => {});
+  // Set up views
+  registerAllViews();
+
+  // Run auto-backup recovery and if-due checks at startup
+  try {
+    await backup.autoRestoreAutoBackup();
+    await backup.runAutoBackupIfDue();
+  } catch (err) {
+    console.warn("[app] auto-backup startup check failed:", err);
   }
 
-  await openDatabase();
-  if (await isLockEnabled()) await showLockScreen();
-  searchIndex.build(await memoryService.listAll());
-
-  const host = document.getElementById("view-host");
-  const sideNav = document.getElementById("side-nav");
-  const tabBar = document.getElementById("tab-bar");
-
-  for (const { id, label, icon, hidden } of VIEWS) {
-    if (hidden) continue;
-    sideNav.append(navButton(id, label, icon, "nav-item"));
-    tabBar.append(navButton(id, label, icon, "tab-item"));
-  }
-
-  // Sidebar footer: About and the in-app User Manual.
-  const sideLinks = document.getElementById("side-links");
-  for (const { id, label } of VIEWS.filter((v) => v.hidden)) {
-    sideLinks.append(
-      el(
-        "button.side-link",
-        { type: "button", dataset: { view: id }, onclick: () => showView(id, host) },
-        label
-      )
-    );
-  }
-
-  // Views (and anything else) can request navigation via the bus.
-  bus.on("navigate", ({ view }) => showView(view, host));
-
-  // "Lock now": relock the session and show the lock screen again.
-  bus.on("lock:locked", async () => {
-    await showLockScreen();
+  // Wire navigation
+  let currentView = null;
+  const mainEl = document.querySelector("main");
+  bus.on("navigate", async (evt) => {
+    if (currentView) currentView.unmount();
+    const ViewClass = window.__views[evt.view];
+    if (!ViewClass) {
+      console.error("[app] unknown view:", evt.view);
+      return;
+    }
+    currentView = new ViewClass(mainEl);
+    mainEl.scrollTop = 0;
+    await currentView.mount();
   });
 
-  document.getElementById("capture-btn").addEventListener("click", openCapture);
-  document.getElementById("share-btn").addEventListener("click", shareApp);
-  document.getElementById("fab").addEventListener("click", openCapture);
+  // Emit the first navigation; for PWA, also listen for install/beforeinstallprompt
+  bus.emit("navigate", { view: "timeline" });
 
-  initCapture();
-  initMemoryCardCapture();
-  bindCaptureShortcut();
-  initCelebrations();
-  startReminderLoop();
-
-  await showView("brain", host);
-  registerServiceWorker();
-
-  // After a restore, rebuild the search index and re-render the open view.
-  bus.on("backup:restored", async () => {
-    searchIndex.build(await memoryService.listAll());
-    const id = currentId;
-    currentId = null;
-    showView(id, host);
+  // Update available (service worker has new code).
+  navigator.serviceWorker?.addEventListener("controllerchange", () => {
+    const banner = document.getElementById("update-available");
+    if (banner) banner.style.display = "block";
   });
-
-  // Backup nudge for people who don't read: an amber dot on the Backup
-  // tab whenever backups are stale, plus one gentle toast per session.
-  updateBackupAttention();
-  bus.on("backup:done", updateBackupAttention);
-  bus.on("memory:created", updateBackupAttention);
-
-  let nudged = false;
-  async function updateBackupAttention() {
-    const status = await getBackupStatus();
-    for (const button of document.querySelectorAll('[data-view="backup"]')) {
-      button.toggleAttribute("data-attention", status.stale);
-    }
-    if (status.stale && !nudged) {
-      nudged = true;
-      showToast(
-        status.lastBackupAt
-          ? `It's been ${status.daysSince} days since your last backup.`
-          : "Tip: back up your memories — it takes one tap."
-      );
-    }
-  }
-
-  function navButton(id, label, icon, className) {
-    return el(
-      `button.${className}`,
-      {
-        type: "button",
-        dataset: { view: id },
-        onclick: () => showView(id, host),
-        "aria-label": label,
-      },
-      el("span.nav-icon", { "aria-hidden": "true" }, icon),
-      el("span.nav-label", {}, label)
-    );
-  }
 }
 
-/**
- * @param {string} id
- * @param {HTMLElement} host
- */
-async function showView(id, host) {
-  if (id === currentId) return;
-  const entry = VIEWS.find((v) => v.id === id);
-  if (!entry) return;
-
-  currentView?.unmount?.();
-  host.replaceChildren();
-
-  currentView = new entry.View(host);
-  currentId = id;
-  await currentView.mount();
-
-  for (const button of document.querySelectorAll("[data-view]")) {
-    button.setAttribute("aria-current", String(button.dataset.view === id));
-  }
-  bus.emit("view:changed", { view: id });
-}
-
-function registerServiceWorker() {
-  if (!("serviceWorker" in navigator)) return;
-  navigator.serviceWorker
-    .register("./sw.js")
-    .catch((err) => console.warn("[sw] registration failed:", err));
-}
-
-main().catch((err) => {
-  console.error("[app] fatal startup error:", err);
-  document.getElementById("view-host").replaceChildren(
-    el(
-      "div.empty",
-      {},
-      el("p.empty-message", {}, "MemoryOS couldn't start."),
-      el("p.empty-hint", {}, "Open the browser console for details, then reload.")
-    )
-  );
+boot().catch((err) => {
+  console.error("[app] boot failed:", err);
 });
